@@ -33,8 +33,8 @@ from computer_use_demo.tools import ToolResult, ToolVersion
 
 PROVIDER_TO_DEFAULT_MODEL_NAME: dict[APIProvider, str] = {
     APIProvider.ANTHROPIC: "claude-sonnet-4-5-20250929",
-    APIProvider.BEDROCK: "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    APIProvider.VERTEX: "claude-3-5-sonnet-v2@20241022",
+    APIProvider.BEDROCK: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    APIProvider.VERTEX: "claude-sonnet-4@20250514",
 }
 
 
@@ -82,6 +82,7 @@ HAIKU_4_5 = ModelConfig(
 
 MODEL_TO_MODEL_CONF: dict[str, ModelConfig] = {
     "claude-3-7-sonnet-20250219": SONNET_3_7,
+    "us.anthropic.claude-3-7-sonnet-20250219-v1:0": SONNET_3_7,  # Bedrock US
     "claude-opus-4@20250508": CLAUDE_4,
     "claude-sonnet-4-20250514": CLAUDE_4,
     "claude-sonnet-4-5-20250929": CLAUDE_4_5,

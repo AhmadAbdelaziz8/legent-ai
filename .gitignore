@@ -25,7 +25,7 @@ wheels/
 venv/
 ENV/
 env/
-.env/
+*.env/
 
 # IDE
 .vscode/
@@ -48,3 +48,9 @@ htmlcov/
 # Linting
 .ruff_cache/
 .mypy_cache/
+
+# Ignore Git
+.gitignore
+
+.env*
+!.env.example

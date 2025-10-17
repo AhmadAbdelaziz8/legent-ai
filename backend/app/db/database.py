@@ -11,4 +11,8 @@ db_metadata = meta
 
 
 async def get_db_connection() -> AsyncConnection:
-    return await engine.connect()
+    conn = await engine.connect()
+    try:
+        yield conn
+    finally:
+        await conn.close()

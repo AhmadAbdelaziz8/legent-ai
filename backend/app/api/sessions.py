@@ -3,13 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from typing import List
 
 # Use the planned schema path
-from app.schemas.session import SessionCreate, Session
+from app.api.schemas import SessionCreate, Session
 from app.db import crud
 # Use our safe dependency function
 from app.db.database import get_db_connection
+import logging
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=Session, status_code=status.HTTP_201_CREATED)
 async def create_new_session(
@@ -17,9 +19,7 @@ async def create_new_session(
     # Use our dependency for safe connection handling
     conn: AsyncConnection = Depends(get_db_connection)
 ):
-    """
-    Create a new task.
-    """
+
     new_session = await crud.create_session(conn=conn, session_data=session_in)
     if not new_session:
         # Use HTTPException for unexpected server errors

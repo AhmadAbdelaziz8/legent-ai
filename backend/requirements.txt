@@ -1,4 +1,3 @@
-# Path:
 fastapi
 uvicorn[standard]
 sqlalchemy

@@ -23,5 +23,14 @@ services:
       - db
     restart: always
 
+  frontend:
+    container_name: vue_frontend
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
+
 volumes:
   postgres_data:

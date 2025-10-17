@@ -99,6 +99,17 @@ async def run_agent_session(
             tool_cb = partial(tool_output_callback,
                               conn=conn, session_id=session_id)
 
+            # Set API key based on provider
+            api_key = ""
+            if provider_enum == APIProvider.ANTHROPIC:
+                api_key = settings.ANTHROPIC_API_KEY
+            elif provider_enum == APIProvider.BEDROCK:
+                # Bedrock uses AWS credentials, no API key needed
+                api_key = ""
+            elif provider_enum == APIProvider.VERTEX:
+                # Vertex uses Google Cloud credentials, no API key needed
+                api_key = ""
+
             await sampling_loop(
                 model=model,
                 provider=provider_enum,
@@ -107,7 +118,7 @@ async def run_agent_session(
                 output_callback=output_cb,
                 tool_output_callback=tool_cb,
                 api_response_callback=lambda r, re, e: None,
-                api_key=settings.ANTHROPIC_API_KEY,
+                api_key=api_key,
                 tool_version=model_config["tool_version"],
                 max_tokens=max_tokens,
                 thinking_budget=thinking_budget,

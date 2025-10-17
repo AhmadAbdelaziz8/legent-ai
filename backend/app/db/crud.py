@@ -43,7 +43,8 @@ async def update_session_status(conn: AsyncConnection, session_id: int, status: 
                                   session_id).values(status=status)
     result = await conn.execute(stmt)
     await conn.commit()
-    return result.fetchone()._asdict() if result.fetchone() else None
+    # For UPDATE statements, we don't need to fetch results
+    return None
 
 
 # messages management

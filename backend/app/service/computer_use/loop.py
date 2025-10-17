@@ -89,7 +89,8 @@ async def sampling_loop(
     Agentic sampling loop for the assistant/tool interaction of computer use.
     """
     tool_group = TOOL_GROUPS_BY_VERSION[tool_version]
-    tool_collection = ToolCollection(*(ToolCls() for ToolCls in tool_group.tools))
+    tool_collection = ToolCollection(
+        *(ToolCls() for ToolCls in tool_group.tools))
     system = BetaTextBlockParam(
         type="text",
         text=f"{SYSTEM_PROMPT}{' ' + system_prompt_suffix if system_prompt_suffix else ''}",
@@ -131,19 +132,24 @@ async def sampling_loop(
                 "thinking": {"type": "enabled", "budget_tokens": thinking_budget}
             }
 
-        # Call the API
+        # Call the API with streaming enabled
         # we use raw_response to provide debug information to streamlit. Your
         # implementation may be able call the SDK directly with:
         # `response = client.messages.create(...)` instead.
         try:
+            # Use a smaller max_tokens to avoid timeout issues
+            # Limit to 1000 tokens to avoid timeout
+            actual_max_tokens = min(max_tokens, 1000)
+
             raw_response = client.beta.messages.with_raw_response.create(
-                max_tokens=max_tokens,
+                max_tokens=actual_max_tokens,
                 messages=messages,
                 model=model,
                 system=[system],
                 tools=tool_collection.to_params(),
                 betas=betas,
                 extra_body=extra_body,
+                stream=False,  # Disable streaming for now
             )
         except (APIStatusError, APIResponseValidationError) as e:
             api_response_callback(e.request, e.response, e)
@@ -156,9 +162,10 @@ async def sampling_loop(
             raw_response.http_response.request, raw_response.http_response, None
         )
 
+        # Handle non-streaming response
         response = raw_response.parse()
-
         response_params = _response_to_params(response)
+
         messages.append(
             {
                 "role": "assistant",
@@ -174,7 +181,8 @@ async def sampling_loop(
                 tool_use_block = cast(BetaToolUseBlockParam, content_block)
                 result = await tool_collection.run(
                     name=tool_use_block["name"],
-                    tool_input=cast(dict[str, Any], tool_use_block.get("input", {})),
+                    tool_input=cast(
+                        dict[str, Any], tool_use_block.get("input", {})),
                 )
                 tool_result_content.append(
                     _make_api_tool_result(result, tool_use_block["id"])
@@ -207,7 +215,8 @@ def _maybe_filter_to_n_most_recent_images(
             item
             for message in messages
             for item in (
-                message["content"] if isinstance(message["content"], list) else []
+                message["content"] if isinstance(
+                    message["content"], list) else []
             )
             if isinstance(item, dict) and item.get("type") == "tool_result"
         ],
@@ -251,7 +260,8 @@ def _response_to_params(
                     "thinking": getattr(block, "thinking", None),
                 }
                 if hasattr(block, "signature"):
-                    thinking_block["signature"] = getattr(block, "signature", None)
+                    thinking_block["signature"] = getattr(
+                        block, "signature", None)
                 res.append(cast(BetaContentBlockParam, thinking_block))
         else:
             # Handle tool use blocks normally
@@ -289,11 +299,13 @@ def _make_api_tool_result(
     result: ToolResult, tool_use_id: str
 ) -> BetaToolResultBlockParam:
     """Convert an agent ToolResult to an API ToolResultBlockParam."""
-    tool_result_content: list[BetaTextBlockParam | BetaImageBlockParam] | str = []
+    tool_result_content: list[BetaTextBlockParam |
+                              BetaImageBlockParam] | str = []
     is_error = False
     if result.error:
         is_error = True
-        tool_result_content = _maybe_prepend_system_tool_result(result, result.error)
+        tool_result_content = _maybe_prepend_system_tool_result(
+            result, result.error)
     else:
         if result.output:
             tool_result_content.append(

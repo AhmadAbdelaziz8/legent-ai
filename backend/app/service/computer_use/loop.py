@@ -150,9 +150,12 @@ async def sampling_loop(
         # implementation may be able call the SDK directly with:
         # `response = client.messages.create(...)` instead.
         try:
-            # Use a smaller max_tokens to avoid timeout issues
-            # Limit to 1000 tokens to avoid timeout
-            actual_max_tokens = min(max_tokens, 1000)
+            # Ensure max_tokens is greater than thinking_budget for Bedrock
+            if thinking_budget and max_tokens <= thinking_budget:
+                # If max_tokens is too small, increase it to be at least thinking_budget + 1000
+                actual_max_tokens = thinking_budget + 1000
+            else:
+                actual_max_tokens = max_tokens
 
             # Log the thinking_budget and max_tokens values for debugging
             if thinking_budget:
@@ -175,7 +178,7 @@ async def sampling_loop(
                 tools=tool_collection.to_params(),
                 betas=betas,
                 extra_body=extra_body,
-                stream=False,  # Disable streaming for now
+                stream=True,  # Enable streaming for long operations
             )
             print(f"✅ [API] API call successful")
         except (APIStatusError, APIResponseValidationError) as e:
@@ -191,40 +194,130 @@ async def sampling_loop(
             raw_response.http_response.request, raw_response.http_response, None
         )
 
-        # Handle non-streaming response
-        print(f"🔧 [API] Parsing response...")
+        # Handle streaming response
+        print(f"🔧 [API] Processing streaming response...")
         response = raw_response.parse()
-        response_params = _response_to_params(response)
-        print(
-            f"✅ [API] Response parsed successfully, content blocks: {len(response_params)}")
 
-        messages.append(
-            {
+        # Check if it's a stream or regular response
+        if hasattr(response, '__iter__') and not hasattr(response, 'content'):
+            # This is a streaming response
+            print(f"🔧 [API] Processing stream with {type(response)}")
+            response_params = []
+            tool_result_content: list[BetaToolResultBlockParam] = []
+
+            # Process each chunk in the stream
+            current_text = ""
+            for chunk in response:
+                print(f"🔧 [API] Processing chunk: {type(chunk)}")
+
+                # Handle different types of streaming events
+                if hasattr(chunk, 'delta') and hasattr(chunk.delta, 'text'):
+                    # Text delta - accumulate text
+                    current_text += chunk.delta.text
+                    print(f"🔧 [API] Text delta: {chunk.delta.text}")
+                elif hasattr(chunk, 'type') and chunk.type == "content_block_delta":
+                    # Content block delta
+                    if hasattr(chunk, 'delta') and hasattr(chunk.delta, 'text'):
+                        current_text += chunk.delta.text
+                        print(f"🔧 [API] Content delta: {chunk.delta.text}")
+                elif hasattr(chunk, 'type') and chunk.type == "content_block_stop":
+                    # End of content block - finalize the text
+                    if current_text:
+                        text_block = {"type": "text", "text": current_text}
+                        response_params.append(text_block)
+                        print(
+                            f"🔧 [API] Finalized text: {current_text[:100]}...")
+                        current_text = ""
+                elif hasattr(chunk, 'type') and chunk.type == "message_stop":
+                    # End of message - finalize any remaining text
+                    if current_text:
+                        text_block = {"type": "text", "text": current_text}
+                        response_params.append(text_block)
+                        print(
+                            f"🔧 [API] Finalized final text: {current_text[:100]}...")
+                        current_text = ""
+
+            print(
+                f"✅ [API] Stream processed successfully, content blocks: {len(response_params)}")
+
+            # Add assistant message
+            assistant_message = {
                 "role": "assistant",
                 "content": response_params,
             }
-        )
+            messages.append(assistant_message)
 
-        tool_result_content: list[BetaToolResultBlockParam] = []
-        for content_block in response_params:
-            output_callback(content_block)
-            if isinstance(content_block, dict) and content_block.get("type") == "tool_use":
-                # Type narrowing for tool use blocks
-                tool_use_block = cast(BetaToolUseBlockParam, content_block)
-                result = await tool_collection.run(
-                    name=tool_use_block["name"],
-                    tool_input=cast(
-                        dict[str, Any], tool_use_block.get("input", {})),
-                )
-                tool_result_content.append(
-                    _make_api_tool_result(result, tool_use_block["id"])
-                )
-                tool_output_callback(result, tool_use_block["id"])
+            # Call output_callback with the content to save to database
+            # Wrap content blocks in a dictionary for database storage
+            content_dict = {"content": response_params}
+            print(
+                f"🔧 [API] Calling output_callback with content_dict: {content_dict}")
+            try:
+                # Call output_callback with the content as a keyword argument
+                # Since output_callback is partial(agent_output_callback, conn=conn, session_id=session_id)
+                # we need to pass the content as the 'output' parameter
+                # Note: agent_output_callback is async, so we need to await it
+                await output_callback(output=content_dict)
+                print(f"✅ [API] output_callback completed successfully")
+            except Exception as e:
+                print(f"❌ [API] output_callback failed: {e}")
+                raise e
 
-        if not tool_result_content:
-            return messages
+            # Add tool results if any
+            if tool_result_content:
+                messages.append(
+                    {"content": tool_result_content, "role": "user"})
+                return messages
+            else:
+                return messages
+        else:
+            # Handle non-streaming response (fallback)
+            print(f"🔧 [API] Parsing non-streaming response...")
+            response_params = _response_to_params(response)
+            print(
+                f"✅ [API] Response parsed successfully, content blocks: {len(response_params)}")
 
-        messages.append({"content": tool_result_content, "role": "user"})
+            assistant_message = {
+                "role": "assistant",
+                "content": response_params,
+            }
+            messages.append(assistant_message)
+
+            # Call output_callback with the content to save to database
+            # Wrap content blocks in a dictionary for database storage
+            content_dict = {"content": response_params}
+            print(
+                f"🔧 [API] Calling output_callback with content_dict: {content_dict}")
+            try:
+                # Call output_callback with the content as a keyword argument
+                # Since output_callback is partial(agent_output_callback, conn=conn, session_id=session_id)
+                # we need to pass the content as the 'output' parameter
+                # Note: agent_output_callback is async, so we need to await it
+                await output_callback(output=content_dict)
+                print(f"✅ [API] output_callback completed successfully")
+            except Exception as e:
+                print(f"❌ [API] output_callback failed: {e}")
+                raise e
+
+            tool_result_content: list[BetaToolResultBlockParam] = []
+            for content_block in response_params:
+                if isinstance(content_block, dict) and content_block.get("type") == "tool_use":
+                    # Type narrowing for tool use blocks
+                    tool_use_block = cast(BetaToolUseBlockParam, content_block)
+                    result = await tool_collection.run(
+                        name=tool_use_block["name"],
+                        tool_input=cast(
+                            dict[str, Any], tool_use_block.get("input", {})),
+                    )
+                    tool_result_content.append(
+                        _make_api_tool_result(result, tool_use_block["id"])
+                    )
+                    tool_output_callback(result, tool_use_block["id"])
+
+            if not tool_result_content:
+                return messages
+
+            messages.append({"content": tool_result_content, "role": "user"})
 
 
 def _maybe_filter_to_n_most_recent_images(

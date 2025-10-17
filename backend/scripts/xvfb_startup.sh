@@ -4,13 +4,39 @@ set -e
 DPI=96
 RES_AND_DEPTH=${WIDTH}x${HEIGHT}x24
 
-# Function to check if Xvfb is already running
-check_xvfb_running() {
-    if [ -e /tmp/.X${DISPLAY_NUM}-lock ]; then
-        return 0  # Xvfb is already running
-    else
-        return 1  # Xvfb is not running
+# Function to check if Xvfb is actually responding
+is_xvfb_responding() {
+    xdpyinfo >/dev/null 2>&1
+    return $?
+}
+
+# Function to clean up stale Xvfb process
+cleanup_stale_xvfb() {
+    local lock_file="/tmp/.X${DISPLAY_NUM}-lock"
+    local unix_socket="/tmp/.X11-unix/X${DISPLAY_NUM}"
+    
+    # Check if display responds
+    if ! is_xvfb_responding; then
+        echo "Xvfb on display ${DISPLAY} is not responding, cleaning up..."
+        
+        # Kill any stale Xvfb processes on this display
+        pkill -9 "Xvfb.*${DISPLAY}" || true
+        
+        # Remove stale lock file
+        if [ -e "$lock_file" ]; then
+            rm -f "$lock_file"
+            echo "Removed stale lock file: $lock_file"
+        fi
+        
+        # Remove stale socket
+        if [ -e "$unix_socket" ]; then
+            rm -f "$unix_socket"
+            echo "Removed stale socket: $unix_socket"
+        fi
+        
+        return 1
     fi
+    return 0
 }
 
 # Function to check if Xvfb is ready
@@ -27,11 +53,8 @@ wait_for_xvfb() {
     return 0
 }
 
-# Check if Xvfb is already running
-if check_xvfb_running; then
-    echo "Xvfb is already running on display ${DISPLAY}"
-    exit 0
-fi
+# Clean up stale Xvfb if needed
+cleanup_stale_xvfb || true
 
 # Start Xvfb
 Xvfb $DISPLAY -ac -screen 0 $RES_AND_DEPTH -retro -dpi $DPI -nolisten tcp -nolisten unix &
@@ -43,6 +66,6 @@ if wait_for_xvfb; then
     echo "Xvfb PID: $XVFB_PID"
 else
     echo "Xvfb failed to start"
-    kill $XVFB_PID
+    kill $XVFB_PID 2>/dev/null || true
     exit 1
 fi

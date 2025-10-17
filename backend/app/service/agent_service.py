@@ -40,18 +40,33 @@ async def tool_output_callback(conn: AsyncConnection, session_id: int, output: d
 def validate_aws_credentials():
     try:
         import boto3
+        print("🔧 [AWS] Starting AWS credentials validation...")
+
+        # Use the same approach as the legacy demo
         session = boto3.Session()
+        print(f"🔧 [AWS] Created boto3 session")
+
         credentials = session.get_credentials()
         if not credentials:
+            print("❌ [AWS] No AWS credentials found")
             return "You must have AWS credentials set up to use the Bedrock API."
+
+        print(
+            f"✅ [AWS] AWS credentials found: {credentials.access_key[:10]}...")
+        print(
+            f"🔧 [AWS] Testing Bedrock access in region: {settings.AWS_REGION}")
 
         # Test if we can access Bedrock
         bedrock = boto3.client('bedrock', region_name=settings.AWS_REGION)
-        bedrock.list_foundation_models()
+        models = bedrock.list_foundation_models()
+        print(
+            f"✅ [AWS] Bedrock access successful! Found {len(models.get('modelSummaries', []))} models")
         return None
     except ImportError:
+        print("❌ [AWS] boto3 not installed")
         return "boto3 is required for AWS Bedrock support. Install with: pip install boto3"
     except Exception as e:
+        print(f"❌ [AWS] Credentials validation failed: {str(e)}")
         return f"AWS credentials validation failed: {str(e)}"
 
 
@@ -65,18 +80,26 @@ async def run_agent_session(
     thinking_budget: int = None,
     only_n_most_recent_images: int = 3
 ):
+    print(
+        f"🚀 [AGENT] Starting agent session {session_id} with provider: {provider}")
     async for conn in get_db_connection():
         stream_manager.create_stream(session_id=session_id)
+        print(f"📡 [AGENT] Stream created for session {session_id}")
 
         try:
             # Validate credentials based on provider
             if provider == "bedrock":
+                print(f"🔧 [AGENT] Validating AWS credentials for Bedrock...")
                 aws_error = validate_aws_credentials()
                 if aws_error:
+                    print(
+                        f"❌ [AGENT] AWS credentials validation failed: {aws_error}")
                     await crud.update_session_status(conn=conn, session_id=session_id, status='error')
                     await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'error', 'content': aws_error}))
                     return
+                print(f"✅ [AGENT] AWS credentials validation passed")
 
+            print(f"🔄 [AGENT] Updating session status to 'running'")
             await crud.update_session_status(conn=conn, session_id=session_id, status='running')
             await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'status', 'content': 'running'}))
 
@@ -92,7 +115,10 @@ async def run_agent_session(
                 max_tokens = model_config["max_tokens"]
 
             if not thinking_budget and model_config["has_thinking"]:
+                # Use the same approach as the legacy demo: thinking_budget = max_tokens / 2
                 thinking_budget = max_tokens // 2
+                print(
+                    f"🔧 [AGENT] Set thinking_budget to {thinking_budget} (max_tokens: {max_tokens})")
 
             output_cb = partial(agent_output_callback,
                                 conn=conn, session_id=session_id)

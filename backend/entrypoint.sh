@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# AWS credentials will be mounted from host's ~/.aws directory
+# Set AWS environment variables
+export AWS_PROFILE=default
+export AWS_DEFAULT_REGION=${AWS_REGION}
+
 # Start VNC services first
 ./scripts/start_all.sh
 ./scripts/novnc_startup.sh

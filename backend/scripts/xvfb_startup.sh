@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e  # Exit on error
+set -e
 
 DPI=96
 RES_AND_DEPTH=${WIDTH}x${HEIGHT}x24

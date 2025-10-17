@@ -2,8 +2,10 @@ services:
   db:
     image: postgres:15-alpine
     container_name: postgres_db
-    env_file:
-      - ./backend/.env
+    environment:
+      - POSTGRES_DB=legent_ai
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
     volumes:
@@ -15,10 +17,13 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+      - "8080:6080" # noVNC web interface
+      - "5900:5900" # VNC port
     env_file:
       - ./backend/.env
     volumes:
       - ./backend/app:/app/app
+      - ~/.aws:/home/computeruse/.aws # Mount host AWS credentials
     depends_on:
       - db
     restart: always

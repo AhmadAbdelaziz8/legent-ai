@@ -108,7 +108,14 @@ async def sampling_loop(
         elif provider == APIProvider.VERTEX:
             client = AnthropicVertex()
         elif provider == APIProvider.BEDROCK:
-            client = AnthropicBedrock()
+            print("🔧 [BEDROCK] Initializing AnthropicBedrock client...")
+            try:
+                client = AnthropicBedrock()
+                print("✅ [BEDROCK] AnthropicBedrock client created successfully")
+            except Exception as e:
+                print(
+                    f"❌ [BEDROCK] Failed to create AnthropicBedrock client: {e}")
+                raise
 
         if enable_prompt_caching:
             betas.append(PROMPT_CACHING_BETA_FLAG)
@@ -127,9 +134,15 @@ async def sampling_loop(
             )
         extra_body = {}
         if thinking_budget:
+            # Apply the fix: thinking_budget_tokens := min(thinking_budget_tokens, max_tokens)
+            # This ensures max_tokens > thinking_budget as required by the API
+            actual_thinking_budget = min(thinking_budget, max_tokens - 1)
+            print(
+                f"🔧 [API] Adjusted thinking_budget from {thinking_budget} to {actual_thinking_budget} (max_tokens: {max_tokens})")
+
             # Ensure we only send the required fields for thinking
             extra_body = {
-                "thinking": {"type": "enabled", "budget_tokens": thinking_budget}
+                "thinking": {"type": "enabled", "budget_tokens": actual_thinking_budget}
             }
 
         # Call the API with streaming enabled
@@ -141,6 +154,19 @@ async def sampling_loop(
             # Limit to 1000 tokens to avoid timeout
             actual_max_tokens = min(max_tokens, 1000)
 
+            # Log the thinking_budget and max_tokens values for debugging
+            if thinking_budget:
+                print(
+                    f"🔧 [API] Thinking budget: {thinking_budget}, Max tokens: {actual_max_tokens}")
+                if actual_max_tokens <= thinking_budget:
+                    print(
+                        f"⚠️ [API] WARNING: max_tokens ({actual_max_tokens}) <= thinking_budget ({thinking_budget})")
+
+            print(f"🔧 [API] Calling {provider} API with model: {model}")
+            print(
+                f"🔧 [API] Max tokens: {actual_max_tokens}, Tool version: {tool_version}")
+            print(f"🔧 [API] Messages count: {len(messages)}")
+
             raw_response = client.beta.messages.with_raw_response.create(
                 max_tokens=actual_max_tokens,
                 messages=messages,
@@ -151,10 +177,13 @@ async def sampling_loop(
                 extra_body=extra_body,
                 stream=False,  # Disable streaming for now
             )
+            print(f"✅ [API] API call successful")
         except (APIStatusError, APIResponseValidationError) as e:
+            print(f"❌ [API] API Status/Response Error: {e}")
             api_response_callback(e.request, e.response, e)
             return messages
         except APIError as e:
+            print(f"❌ [API] API Error: {e}")
             api_response_callback(e.request, e.body, e)
             return messages
 
@@ -163,8 +192,11 @@ async def sampling_loop(
         )
 
         # Handle non-streaming response
+        print(f"🔧 [API] Parsing response...")
         response = raw_response.parse()
         response_params = _response_to_params(response)
+        print(
+            f"✅ [API] Response parsed successfully, content blocks: {len(response_params)}")
 
         messages.append(
             {

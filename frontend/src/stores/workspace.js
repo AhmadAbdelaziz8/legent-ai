@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import vncService from '../services/vncService.js'
 
 export const useWorkspaceStore = defineStore('workspace', () => {
   // State
@@ -9,6 +10,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   const recordingStatus = ref('idle')
   const loading = ref(false)
   const error = ref(null)
+
+  // VNC State
+  const vncConnected = ref(false)
+  const vncConnecting = ref(false)
+  const vncError = ref(null)
 
   // Getters
   const workspaceCount = computed(() => workspaces.value.length)
@@ -68,6 +74,61 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     error.value = null
   }
 
+  // VNC Actions
+  const connectVNC = async (host = 'localhost', port = 6080) => {
+    try {
+      vncConnecting.value = true
+      vncError.value = null
+
+      const success = await vncService.connect(host, port)
+      vncConnected.value = success
+
+      if (!success) {
+        vncError.value = vncService.error
+      }
+
+      return success
+    } catch (err) {
+      vncError.value = err.message
+      vncConnected.value = false
+      return false
+    } finally {
+      vncConnecting.value = false
+    }
+  }
+
+  const disconnectVNC = () => {
+    vncService.disconnect()
+    vncConnected.value = false
+    vncError.value = null
+  }
+
+  const getVNCUrl = (options = {}) => {
+    return vncService.getVNCUrl(options)
+  }
+
+  const takeVNCScreenshot = async () => {
+    if (!vncConnected.value) {
+      throw new Error('VNC not connected')
+    }
+    return await vncService.takeScreenshot()
+  }
+
+  // Setup VNC event listeners
+  vncService.on('connected', () => {
+    vncConnected.value = true
+    vncError.value = null
+  })
+
+  vncService.on('disconnected', () => {
+    vncConnected.value = false
+  })
+
+  vncService.on('error', (error) => {
+    vncError.value = error
+    vncConnected.value = false
+  })
+
   return {
     // State
     workspaces,
@@ -76,6 +137,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     recordingStatus,
     loading,
     error,
+
+    // VNC State
+    vncConnected,
+    vncConnecting,
+    vncError,
 
     // Getters
     workspaceCount,
@@ -86,5 +152,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     stopRecording,
     setCurrentWorkspace,
     clearError,
+
+    // VNC Actions
+    connectVNC,
+    disconnectVNC,
+    getVNCUrl,
+    takeVNCScreenshot,
   }
 })

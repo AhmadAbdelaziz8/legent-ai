@@ -40,79 +40,39 @@
     </div>
 
     <!-- Main Workspace Area -->
-    <div class="flex-1 relative bg-blue-900">
-      <!-- Desktop-like background -->
-      <div class="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-900">
-        <!-- Workspace content placeholder -->
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="text-center text-white">
-            <div class="mb-4">
-              <svg
-                class="h-16 w-16 mx-auto text-blue-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1"
-                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                ></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Workspace 1</h3>
-            <p class="text-blue-200">AI Agent Desktop Environment</p>
-          </div>
-        </div>
-
-        <!-- Taskbar-like element at bottom -->
-        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
-          <div class="flex items-center space-x-2">
-            <!-- App icons placeholder -->
-            <div class="w-8 h-8 bg-green-500 rounded flex items-center justify-center">
-              <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20"></svg>
-            </div>
-            <div class="w-8 h-8 bg-gray-600 rounded flex items-center justify-center">
-              <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </div>
-            <div class="w-8 h-8 bg-yellow-500 rounded flex items-center justify-center">
-              <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                ></path>
-              </svg>
-            </div>
-            <div class="w-8 h-8 bg-red-500 rounded flex items-center justify-center">
-              <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="flex-1 relative">
+      <!-- VNC Viewer Component -->
+      <VNCViewer
+        :vnc-host="vncHost"
+        :vnc-port="vncPort"
+        :auto-connect="autoConnect"
+        @connected="onVNCConnected"
+        @disconnected="onVNCDisconnected"
+        @error="onVNCError"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace.js'
+import VNCViewer from './VNCViewer.vue'
 
 const workspaceStore = useWorkspaceStore()
 
+// VNC Configuration
+const vncHost = ref('localhost')
+const vncPort = ref(8080) // Docker maps 6080 to 8080
+const autoConnect = ref(false) // Set to true for automatic connection
+
 const isRecording = computed(() => workspaceStore.isRecording)
 const recordingStatus = computed(() => workspaceStore.recordingStatus)
+
+// VNC State from store
+const vncConnected = computed(() => workspaceStore.vncConnected)
+const vncConnecting = computed(() => workspaceStore.vncConnecting)
+const vncError = computed(() => workspaceStore.vncError)
 
 const toggleRecording = async () => {
   try {
@@ -124,6 +84,35 @@ const toggleRecording = async () => {
   } catch (error) {
     console.error('Failed to toggle recording:', error)
   }
+}
+
+// VNC Event Handlers
+const onVNCConnected = () => {
+  console.log('VNC Connected')
+  // Update workspace status or perform any actions when VNC connects
+}
+
+const onVNCDisconnected = () => {
+  console.log('VNC Disconnected')
+  // Handle VNC disconnection
+}
+
+const onVNCError = (error) => {
+  console.error('VNC Error:', error)
+  // Handle VNC errors
+}
+
+// VNC Actions
+const connectVNC = async () => {
+  try {
+    await workspaceStore.connectVNC(vncHost.value, vncPort.value)
+  } catch (error) {
+    console.error('Failed to connect to VNC:', error)
+  }
+}
+
+const disconnectVNC = () => {
+  workspaceStore.disconnectVNC()
 }
 
 onMounted(() => {

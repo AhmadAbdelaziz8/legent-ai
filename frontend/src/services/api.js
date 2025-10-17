@@ -82,10 +82,63 @@ export const messagesApi = {
   },
 }
 
+export const vncApi = {
+  async getStatus() {
+    return apiRequest('/vnc/status')
+  },
+
+  async start() {
+    return apiRequest('/vnc/start', {
+      method: 'POST',
+    })
+  },
+
+  async stop() {
+    return apiRequest('/vnc/stop', {
+      method: 'POST',
+    })
+  },
+
+  async restart() {
+    return apiRequest('/vnc/restart', {
+      method: 'POST',
+    })
+  },
+
+  async getSessions() {
+    return apiRequest('/vnc/sessions')
+  },
+
+  async createSession(config) {
+    return apiRequest('/vnc/sessions', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    })
+  },
+
+  async deleteSession(sessionId) {
+    return apiRequest(`/vnc/sessions/${sessionId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  async getScreenshot() {
+    return apiRequest('/vnc/screenshot')
+  },
+
+  async interact(action, data) {
+    return apiRequest('/vnc/interact', {
+      method: 'POST',
+      body: JSON.stringify({ action, ...data }),
+    })
+  },
+}
+
 export const api = {
   health: healthApi,
   sessions: sessionsApi,
   messages: messagesApi,
+  vnc: vncApi,
 }
 
 export const apiUtils = {

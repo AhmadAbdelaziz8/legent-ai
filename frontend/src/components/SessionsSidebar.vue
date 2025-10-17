@@ -1,88 +1,147 @@
 <template>
-  <div class="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
-    <!-- Header -->
-    <div class="p-4 border-b border-gray-200 bg-gray-50">
-      <h2 class="text-lg font-semibold text-gray-900">Sessions</h2>
-      <p class="text-sm text-gray-500 mt-1">{{ sessionCount }} sessions</p>
-    </div>
-
-    <!-- New Session Button -->
-    <div class="p-4 border-b border-gray-200">
-      <button
-        @click="handleNewSession"
-        :disabled="loading"
-        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          ></path>
-        </svg>
-        New Session
-      </button>
-    </div>
-
-    <!-- Sessions List -->
-    <div class="flex-1 overflow-y-auto">
-      <!-- Loading State -->
-      <div v-if="loading && sessions.length === 0" class="p-4 space-y-3">
-        <div v-for="i in 3" :key="i" class="animate-pulse">
-          <div class="h-16 bg-gray-200 rounded-lg"></div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="!loading && sessions.length === 0" class="p-4 text-center">
-        <div class="text-gray-400 mb-2">
-          <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div
+    class="w-56 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-lg"
+  >
+    <!-- Header with Logo -->
+    <div
+      class="p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900"
+    >
+      <div class="flex items-center space-x-3 mb-4">
+        <div
+          class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center"
+        >
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
             ></path>
           </svg>
         </div>
-        <p class="text-gray-500 text-sm">No sessions yet</p>
-        <p class="text-gray-400 text-xs mt-1">Create your first session to get started</p>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Legent AI</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">AI Assistant Platform</p>
+        </div>
       </div>
 
-      <!-- Sessions List -->
-      <div v-else class="p-2">
-        <div
-          v-for="session in sortedSessions"
-          :key="session.id"
-          @click="selectSession(session)"
-          :class="[
-            'p-3 rounded-lg cursor-pointer transition-all duration-200 mb-2',
-            currentSession?.id === session.id
-              ? 'bg-blue-50 border border-blue-200'
-              : 'hover:bg-gray-50 border border-transparent',
-          ]"
-        >
-          <!-- Session Header -->
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900 truncate">
-                {{ truncateText(session.initial_prompt, 50) }}
+      <!-- Search Bar -->
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Q Search"
+          class="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        />
+      </div>
+    </div>
+
+    <!-- Task History Section -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="p-3">
+        <div class="flex items-center space-x-2 mb-3">
+          <svg
+            class="w-5 h-5 text-slate-500 dark:text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"
+            ></path>
+          </svg>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Task History</h2>
+        </div>
+
+        <!-- Library Section -->
+        <div class="mb-4">
+          <button
+            @click="toggleLibrary"
+            class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+          >
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                ></path>
+              </svg>
+              <span>Library</span>
+            </div>
+            <svg
+              :class="[
+                'w-4 h-4 transition-transform duration-200',
+                libraryExpanded ? 'rotate-180' : '',
+              ]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+
+          <!-- Library Items -->
+          <div v-if="libraryExpanded" class="mt-2 space-y-1">
+            <div
+              v-for="session in sortedSessions"
+              :key="session.id"
+              @click="selectSession(session)"
+              :class="[
+                'group p-2 rounded-lg cursor-pointer transition-all duration-300 border',
+                currentSession?.id === session.id
+                  ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-300 dark:border-green-600'
+                  : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-600 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
+              ]"
+            >
+              <p class="text-xs font-medium text-slate-900 dark:text-slate-100 truncate">
+                {{ truncateText(session.initial_prompt, 30) }}
               </p>
-              <p class="text-xs text-gray-500 mt-1">
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {{ formatRelativeTime(session.created_at) }}
               </p>
             </div>
-            <StatusBadge :status="session.status" />
           </div>
+        </div>
 
-          <!-- Session Footer -->
-          <div class="flex items-center justify-between text-xs text-gray-500">
-            <span>ID: {{ session.id }}</span>
-            <span v-if="session.message_count !== undefined">
-              {{ session.message_count }} messages
-            </span>
-          </div>
+        <!-- Prompt Gallery Section -->
+        <div
+          class="flex items-center space-x-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+            ></path>
+          </svg>
+          <span>Prompt Gallery</span>
         </div>
       </div>
     </div>
@@ -105,11 +164,14 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useSessionsStore } from '@/stores/sessions.js'
 import StatusBadge from './StatusBadge.vue'
 
 const sessionsStore = useSessionsStore()
+
+// State
+const libraryExpanded = ref(true)
 
 // Computed properties
 const sessions = computed(() => sessionsStore.sessions)
@@ -124,12 +186,8 @@ const selectSession = (session) => {
   sessionsStore.setCurrentSession(session)
 }
 
-const handleNewSession = () => {
-  // For now, just show an alert. In a real app, this would open a modal or navigate to a form
-  const prompt = prompt('Enter initial prompt for new session:')
-  if (prompt) {
-    sessionsStore.createSession(prompt)
-  }
+const toggleLibrary = () => {
+  libraryExpanded.value = !libraryExpanded.value
 }
 
 const truncateText = (text, maxLength) => {

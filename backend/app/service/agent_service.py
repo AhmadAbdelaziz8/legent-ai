@@ -37,6 +37,24 @@ async def tool_output_callback(conn: AsyncConnection, session_id: int, output: d
     await _save_and_stream_message(conn=conn, session_id=session_id, role='tool', content=output)
 
 
+def validate_aws_credentials():
+    try:
+        import boto3
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        if not credentials:
+            return "You must have AWS credentials set up to use the Bedrock API."
+
+        # Test if we can access Bedrock
+        bedrock = boto3.client('bedrock', region_name=settings.AWS_REGION)
+        bedrock.list_foundation_models()
+        return None
+    except ImportError:
+        return "boto3 is required for AWS Bedrock support. Install with: pip install boto3"
+    except Exception as e:
+        return f"AWS credentials validation failed: {str(e)}"
+
+
 async def run_agent_session(
     session_id: int,
     initial_prompt: str,
@@ -51,6 +69,14 @@ async def run_agent_session(
         stream_manager.create_stream(session_id=session_id)
 
         try:
+            # Validate credentials based on provider
+            if provider == "bedrock":
+                aws_error = validate_aws_credentials()
+                if aws_error:
+                    await crud.update_session_status(conn=conn, session_id=session_id, status='error')
+                    await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'error', 'content': aws_error}))
+                    return
+
             await crud.update_session_status(conn=conn, session_id=session_id, status='running')
             await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'status', 'content': 'running'}))
 

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import AppHeader from './components/AppHeader.vue'
-import TaskSidebar from './components/TaskSidebar.vue'
+import SessionsSidebar from './components/SessionsSidebar.vue'
 import WorkspaceViewer from './components/WorkspaceViewer.vue'
 import ChatPanel from './components/ChatPanel.vue'
 import './global.css'
@@ -19,8 +19,8 @@ onMounted(() => {
 
     <!-- Main Content -->
     <main class="flex-1 flex overflow-hidden">
-      <!-- Left Sidebar: Task Management -->
-      <TaskSidebtar />
+      <!-- Left Sidebar: Sessions History -->
+      <SessionsSidebar />
 
       <!-- Center: Workspace Viewer -->
       <WorkspaceViewer />

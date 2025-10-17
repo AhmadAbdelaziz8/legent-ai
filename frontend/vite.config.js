@@ -13,4 +13,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    host: '0.0.0.0', // Allow external connections
+    port: 5173, // Vite default port
+    watch: {
+      usePolling: true, // Enable polling for file changes in Docker
+    },
+  },
+  define: {
+    // Define environment variables for the build
+    'import.meta.env.VITE_API_URL': JSON.stringify(
+      process.env.VITE_API_URL || 'http://localhost:8000',
+    ),
+  },
 })

@@ -32,7 +32,14 @@ services:
     container_name: vue_frontend
     build: ./frontend
     ports:
-      - "3000:80"
+      - "3000:5173" # Vite dev server port
+    volumes:
+      - ./frontend/src:/app/src # Mount source code for hot reload
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000 # Use localhost for browser access
     depends_on:
       - backend
     restart: always

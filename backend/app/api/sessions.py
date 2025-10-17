@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncConnection
 from typing import List
 
@@ -8,14 +9,18 @@ from app.db import crud
 # Use our safe dependency function
 from app.db.database import get_db_connection
 import logging
+from app.service.stream_manager import stream_manager, stream_generator
+from app.service.agent_service import run_agent_session
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 @router.post("/", response_model=Session, status_code=status.HTTP_201_CREATED)
 async def create_new_session(
     session_in: SessionCreate,
+    background_tasks: BackgroundTasks,
     # Use our dependency for safe connection handling
     conn: AsyncConnection = Depends(get_db_connection)
 ):
@@ -27,6 +32,15 @@ async def create_new_session(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create the task."
         )
+
+    # Start the background task to run the agent session
+    background_tasks.add_task(
+        run_agent_session,
+        session_id=new_session["id"],
+        initial_prompt=session_in.initial_prompt,
+        provider=session_in.provider
+    )
+
     # Return the data directly. FastAPI will serialize it.
     return new_session
 
@@ -52,3 +66,15 @@ async def read_session(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
     return db_session
+
+
+@router.get("/{session_id}/stream")
+async def stream_session_updates(session_id: int, request: Request) -> StreamingResponse:
+
+    # Create a stream for the session if it doesn't exist (e.g., if client connects fast)
+    stream_manager.create_stream(session_id)
+
+    return StreamingResponse(
+        stream_generator(session_id, request),
+        media_type="text/event-stream"
+    )

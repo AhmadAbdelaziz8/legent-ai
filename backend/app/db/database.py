@@ -10,7 +10,7 @@ engine = create_async_engine(settings.DATABASE_URL)
 db_metadata = meta
 
 
-async def get_db_connection() -> AsyncConnection:
+async def get_db_connection() -> AsyncGenerator[AsyncConnection, None]:
     conn = await engine.connect()
     try:
         yield conn

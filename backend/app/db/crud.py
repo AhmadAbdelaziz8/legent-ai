@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 from app.db.models import sessions, messages
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 from typing import Dict, List
 
 from app.api.schemas import SessionCreate, MessageCreate
@@ -38,7 +38,17 @@ async def get_session_by_id(conn: AsyncConnection, session_id: int) -> Dict | No
     return session_row._asdict() if session_row else None
 
 
+async def update_session_status(conn: AsyncConnection, session_id: int, status: str) -> Dict | None:
+    stmt = update(sessions).where(sessions.c.id ==
+                                  session_id).values(status=status)
+    result = await conn.execute(stmt)
+    await conn.commit()
+    return result.fetchone()._asdict() if result.fetchone() else None
+
+
 # messages management
+
+
 async def create_message(conn: AsyncConnection, message_data: MessageCreate) -> Dict | None:
     stmt = insert(messages).values(
         **message_data.model_dump()).returning(messages)
@@ -46,9 +56,9 @@ async def create_message(conn: AsyncConnection, message_data: MessageCreate) -> 
     result = await conn.execute(stmt)
 
     message_row = result.fetchone()
-    
+
     await conn.commit()
-    
+
     return message_row._asdict() if message_row else None
 
 

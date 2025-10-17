@@ -10,5 +10,11 @@ COPY . /app
 
 EXPOSE 8000
 
+# Copy and make startup scripts executable
+COPY scripts/ /app/scripts/
+RUN chmod +x /app/scripts/*.sh
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # The command to run when the container starts
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["/app/entrypoint.sh"]

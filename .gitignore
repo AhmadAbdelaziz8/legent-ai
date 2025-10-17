@@ -53,3 +53,4 @@ htmlcov/
 .gitignore
 .env
 backend/.env
+backend/.env

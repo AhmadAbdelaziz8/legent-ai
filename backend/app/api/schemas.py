@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 
 class SessionCreate(BaseModel):
@@ -21,6 +22,8 @@ class MessageCreate(BaseModel):
     role: str = Field(...,
                       description="Message's sender role (user, assistant, tool)")
     content: dict = Field(..., description="Message's content as JSON")
+    base64_image: Optional[str] = Field(
+        None, description="Base64 encoded screenshot image")
 
 
 class Message(BaseModel):
@@ -28,4 +31,5 @@ class Message(BaseModel):
     session_id: int
     role: str
     content: dict
+    base64_image: Optional[str] = None
     created_at: datetime

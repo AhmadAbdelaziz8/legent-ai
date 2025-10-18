@@ -21,6 +21,8 @@ services:
       - "5900:5900" # VNC port
     env_file:
       - ./backend/.env
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend/app:/app/app
       - ~/.aws:/home/computeruse/.aws # Mount host AWS credentials

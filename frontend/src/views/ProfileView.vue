@@ -1,17 +1,13 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
-  >
+  <div class="min-h-screen bg-white dark:bg-slate-900">
     <!-- Header -->
-    <header
-      class="bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xl border-b border-slate-700"
-    >
+    <header class="bg-white text-slate-900 shadow-xl border-b border-slate-200">
       <div class="px-6 py-4">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <router-link to="/" class="flex items-center space-x-3">
+          <div class="flex items-center gap-4">
+            <router-link to="/" class="flex items-center gap-3">
               <div
-                class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg"
+                class="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center shadow-lg"
               >
                 <svg
                   class="w-6 h-6 text-white"
@@ -28,13 +24,16 @@
                 </svg>
               </div>
               <div>
-                <h1 class="text-xl font-bold">Legent AI</h1>
-                <span class="text-sm text-slate-300">Profile</span>
+                <h1 class="text-xl font-bold text-slate-900">Legent AI</h1>
+                <span class="text-sm text-slate-600">Profile</span>
               </div>
             </router-link>
           </div>
-          <div class="flex items-center space-x-4">
-            <router-link to="/dashboard" class="text-slate-300 hover:text-white transition-colors">
+          <div class="flex items-center gap-4">
+            <router-link
+              to="/dashboard"
+              class="text-slate-600 hover:text-slate-900 transition-colors"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -60,10 +59,8 @@
             <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
               Profile Information
             </h3>
-            <div class="flex items-center space-x-6 mb-6">
-              <div
-                class="w-20 h-20 bg-gradient-to-br from-slate-400 to-slate-600 rounded-full flex items-center justify-center"
-              >
+            <div class="flex items-center gap-6 mb-6">
+              <div class="w-20 h-20 bg-slate-600 rounded-full flex items-center justify-center">
                 <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fill-rule="evenodd"
@@ -128,21 +125,15 @@
               Activity Statistics
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div
-                class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg"
-              >
+              <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <div class="text-2xl font-bold text-green-600 dark:text-green-400">127</div>
                 <div class="text-sm text-slate-600 dark:text-slate-400">Sessions Created</div>
               </div>
-              <div
-                class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg"
-              >
+              <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">2,847</div>
                 <div class="text-sm text-slate-600 dark:text-slate-400">Messages Exchanged</div>
               </div>
-              <div
-                class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg"
-              >
+              <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">45h</div>
                 <div class="text-sm text-slate-600 dark:text-slate-400">Total Usage Time</div>
               </div>
@@ -154,7 +145,7 @@
             <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
               Recent Sessions
             </h3>
-            <div class="space-y-3">
+            <div class="flex flex-col gap-3">
               <div
                 class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
               >

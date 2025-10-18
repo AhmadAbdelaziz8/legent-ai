@@ -22,6 +22,8 @@ RUN apt-get update && \
     galculator \
     pcmanfm \
     unzip \
+    # Taskbar/panel
+    tint2 \
     # Additional X11 packages
     xserver-xorg-video-dummy \
     xserver-xorg-core \

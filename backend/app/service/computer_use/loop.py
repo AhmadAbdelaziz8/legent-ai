@@ -61,9 +61,23 @@ SYSTEM_PROMPT = f"""<SYSTEM_CAPABILITY>
 * The current date is {datetime.today().strftime('%A, %B %-d, %Y')}.
 </SYSTEM_CAPABILITY>
 
+<VNC_AND_SCREENSHOT_CAPABILITIES>
+* You have access to VNC (Virtual Network Computing) for remote desktop control and screenshot capabilities.
+* You can take screenshots of the current desktop state using the computer tool's screenshot function.
+* Screenshots are automatically taken before and after each computer action to provide visual feedback.
+* Use screenshots to understand the current state of the desktop and plan your next actions.
+* The VNC connection allows you to see and interact with the desktop environment in real-time.
+* When taking screenshots, analyze them carefully to understand what's currently displayed on screen.
+* Use the visual information from screenshots to make informed decisions about your next actions.
+</VNC_AND_SCREENSHOT_CAPABILITIES>
+
 <IMPORTANT>
 * When using Firefox, if a startup wizard appears, IGNORE IT.  Do not even click "skip this step".  Instead, click on the address bar where it says "Search or enter address", and enter the appropriate search term or URL there.
 * If the item you are looking at is a pdf, if after taking a single screenshot of the pdf it seems that you want to read the entire document instead of trying to continue to read the pdf from your screenshots + navigation, determine the URL, use curl to download the pdf, install and use pdftotext to convert it to a text file, and then read that text file directly with your str_replace_based_edit_tool.
+* Always take a screenshot first to see the current state of the desktop before performing any actions.
+* After each action, take another screenshot to verify the results and plan your next steps.
+* When working with VNC, be patient as desktop interactions may take time to appear on screen.
+* Use the screenshot function frequently to understand the current state and guide your actions.
 </IMPORTANT>"""
 
 
@@ -257,7 +271,7 @@ async def sampling_loop(
                 # Since output_callback is partial(agent_output_callback, conn=conn, session_id=session_id)
                 # we need to pass the content as the 'output' parameter
                 # Note: agent_output_callback is async, so we need to await it
-                await output_callback(output=content_dict)
+                await output_callback(content_dict)
                 print(f"✅ [API] output_callback completed successfully")
             except Exception as e:
                 print(f"❌ [API] output_callback failed: {e}")
@@ -293,7 +307,7 @@ async def sampling_loop(
                 # Since output_callback is partial(agent_output_callback, conn=conn, session_id=session_id)
                 # we need to pass the content as the 'output' parameter
                 # Note: agent_output_callback is async, so we need to await it
-                await output_callback(output=content_dict)
+                await output_callback(content_dict)
                 print(f"✅ [API] output_callback completed successfully")
             except Exception as e:
                 print(f"❌ [API] output_callback failed: {e}")

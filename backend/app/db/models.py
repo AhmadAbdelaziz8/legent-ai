@@ -1,4 +1,4 @@
-from sqlalchemy import (JSON, DateTime, ForeignKey, MetaData, String,
+from sqlalchemy import (JSON, DateTime, ForeignKey, MetaData, String, Text,
                         Table, Column, Integer, true)
 from sqlalchemy.sql import func
 
@@ -22,5 +22,6 @@ messages = Table(
     Column('session_id', Integer, ForeignKey("sessions.id")),
     Column('role', String),
     Column('content', JSON),
+    Column('base64_image', Text, nullable=True),
     Column('created_at', DateTime(timezone=True), server_default=func.now())
 )

@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="flex-1 flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
-  >
-   
-
+  <div class="flex-1 flex flex-col bg-white dark:bg-slate-900">
     <!-- Main Workspace Area -->
     <div class="flex-1 relative bg-slate-900 dark:bg-slate-950">
       <!-- VNC Viewer Component -->

@@ -1,159 +1,14 @@
-/**
- * VNC Service for managing VNC connections and interactions
- */
-
-import { api } from './api.js'
+import { vncApi } from './api.js'
 
 class VNCService {
   constructor() {
-    this.isConnected = false
-    this.isConnecting = false
+    this.connected = false
+    this.connecting = false
     this.error = null
-    this.vncHost = 'localhost'
-    this.vncPort = 8080 // Docker maps 6080 to 8080
     this.listeners = new Map()
   }
 
-  /**
-   * Connect to VNC server
-   * @param {string} host - VNC server host
-   * @param {number} port - VNC server port
-   * @returns {Promise<boolean>} - Connection success
-   */
-  async connect(host = this.vncHost, port = this.vncPort) {
-    if (this.isConnecting || this.isConnected) {
-      return this.isConnected
-    }
-
-    this.isConnecting = true
-    this.error = null
-    this.vncHost = host
-    this.vncPort = port
-
-    try {
-      // Check VNC status via API
-      const status = await api.vnc.getStatus()
-
-      if (status.is_running) {
-        this.isConnected = true
-        this.isConnecting = false
-        this.emit('connected', { host, port, status })
-        return true
-      } else {
-        // Try to start VNC services
-        await api.vnc.start()
-
-        // Wait a moment and check again
-        await new Promise((resolve) => setTimeout(resolve, 3000))
-        const newStatus = await api.vnc.getStatus()
-
-        if (newStatus.is_running) {
-          this.isConnected = true
-          this.isConnecting = false
-          this.emit('connected', { host, port, status: newStatus })
-          return true
-        } else {
-          throw new Error(status.error || 'VNC services failed to start')
-        }
-      }
-    } catch (err) {
-      this.error = `Failed to connect to VNC server at ${host}:${port}: ${err.message}`
-      this.isConnecting = false
-      this.emit('error', this.error)
-      return false
-    }
-  }
-
-  /**
-   * Disconnect from VNC server
-   */
-  async disconnect() {
-    if (!this.isConnected) return
-
-    try {
-      // Optionally stop VNC services
-      // await api.vnc.stop()
-    } catch (err) {
-      console.warn('Error stopping VNC services:', err)
-    }
-
-    this.isConnected = false
-    this.isConnecting = false
-    this.emit('disconnected')
-  }
-
-  /**
-   * Get VNC URL for iframe embedding
-   * @param {Object} options - VNC connection options
-   * @returns {string} - VNC URL
-   */
-  getVNCUrl(options = {}) {
-    const {
-      autoconnect = true,
-      resize = 'scale',
-      quality = 6,
-      compression = 6,
-      show_dot = false,
-      view_only = false,
-    } = options
-
-    const params = new URLSearchParams({
-      autoconnect: autoconnect.toString(),
-      resize,
-      quality: quality.toString(),
-      compression: compression.toString(),
-      show_dot: show_dot.toString(),
-      view_only: view_only.toString(),
-    })
-
-    return `http://${this.vncHost}:${this.vncPort}/vnc.html?${params.toString()}`
-  }
-
-  /**
-   * Send mouse event to VNC
-   * @param {Object} event - Mouse event data
-   */
-  sendMouseEvent(event) {
-    if (!this.isConnected) return
-
-    // This would typically be handled by the VNC client
-    console.log('Mouse event:', event)
-  }
-
-  /**
-   * Send keyboard event to VNC
-   * @param {Object} event - Keyboard event data
-   */
-  sendKeyboardEvent(event) {
-    if (!this.isConnected) return
-
-    // This would typically be handled by the VNC client
-    console.log('Keyboard event:', event)
-  }
-
-  /**
-   * Take screenshot of VNC session
-   * @returns {Promise<string>} - Base64 encoded screenshot
-   */
-  async takeScreenshot() {
-    if (!this.isConnected) {
-      throw new Error('Not connected to VNC')
-    }
-
-    try {
-      const result = await api.vnc.getScreenshot()
-      return result.screenshot
-    } catch (err) {
-      console.error('Failed to take VNC screenshot:', err)
-      throw err
-    }
-  }
-
-  /**
-   * Add event listener
-   * @param {string} event - Event name
-   * @param {Function} callback - Callback function
-   */
+  // Event handling
   on(event, callback) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, [])
@@ -161,55 +16,121 @@ class VNCService {
     this.listeners.get(event).push(callback)
   }
 
-  /**
-   * Remove event listener
-   * @param {string} event - Event name
-   * @param {Function} callback - Callback function
-   */
   off(event, callback) {
-    if (!this.listeners.has(event)) return
-
-    const callbacks = this.listeners.get(event)
-    const index = callbacks.indexOf(callback)
-    if (index > -1) {
-      callbacks.splice(index, 1)
+    if (this.listeners.has(event)) {
+      const callbacks = this.listeners.get(event)
+      const index = callbacks.indexOf(callback)
+      if (index > -1) {
+        callbacks.splice(index, 1)
+      }
     }
   }
 
-  /**
-   * Emit event to listeners
-   * @param {string} event - Event name
-   * @param {*} data - Event data
-   */
   emit(event, data) {
-    if (!this.listeners.has(event)) return
-
-    this.listeners.get(event).forEach((callback) => {
-      try {
-        callback(data)
-      } catch (err) {
-        console.error('Error in VNC event listener:', err)
-      }
-    })
+    if (this.listeners.has(event)) {
+      this.listeners.get(event).forEach((callback) => callback(data))
+    }
   }
 
-  /**
-   * Get connection status
-   * @returns {Object} - Status information
-   */
+  async connect(host = 'localhost', port = 8080) {
+    try {
+      this.connecting = true
+      this.error = null
+      this.emit('connecting')
+
+      // Check VNC status
+      const status = await vncApi.getStatus()
+      if (!status.running) {
+        // Start VNC if not running
+        await vncApi.start()
+      }
+
+      this.connected = true
+      this.connecting = false
+      this.emit('connected')
+      return true
+    } catch (err) {
+      this.error = err.message
+      this.connected = false
+      this.connecting = false
+      this.emit('error', err)
+      return false
+    }
+  }
+
+  disconnect() {
+    this.connected = false
+    this.error = null
+    this.emit('disconnected')
+  }
+
+  getVNCUrl(options = {}) {
+    const { host = 'localhost', port = 8080, path = '' } = options
+    return `http://${host}:${port}${path}`
+  }
+
+  async takeScreenshot() {
+    if (!this.connected) {
+      throw new Error('VNC not connected')
+    }
+
+    try {
+      const response = await vncApi.getScreenshot()
+      return response.screenshot
+    } catch (err) {
+      this.error = err.message
+      this.emit('error', err)
+      throw err
+    }
+  }
+
+  async interact(action, data = {}) {
+    if (!this.connected) {
+      throw new Error('VNC not connected')
+    }
+
+    try {
+      const response = await vncApi.interact(action, data)
+      return response
+    } catch (err) {
+      this.error = err.message
+      this.emit('error', err)
+      throw err
+    }
+  }
+
+  // Mouse interactions
+  async click(x, y, button = 1) {
+    return this.interact('click', { x, y, button })
+  }
+
+  async rightClick(x, y) {
+    return this.click(x, y, 3)
+  }
+
+  async doubleClick(x, y) {
+    return this.interact('click', { x, y, button: '--repeat 2 --delay 10 1' })
+  }
+
+  // Keyboard interactions
+  async type(text) {
+    return this.interact('type', { text })
+  }
+
+  async key(key) {
+    return this.interact('key', { key })
+  }
+
+  // Utility methods
   getStatus() {
     return {
-      isConnected: this.isConnected,
-      isConnecting: this.isConnecting,
+      connected: this.connected,
+      connecting: this.connecting,
       error: this.error,
-      host: this.vncHost,
-      port: this.vncPort,
     }
   }
 }
 
-// Create singleton instance
-const vncService = new VNCService()
-
+// Export singleton instance
+export const vncService = new VNCService()
 export default vncService
-export { VNCService }

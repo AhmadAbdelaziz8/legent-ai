@@ -70,11 +70,16 @@ async def read_session(
 
 @router.get("/{session_id}/stream")
 async def stream_session_updates(session_id: int, request: Request) -> StreamingResponse:
-
     # Create a stream for the session if it doesn't exist (e.g., if client connects fast)
     stream_manager.create_stream(session_id)
 
     return StreamingResponse(
         stream_generator(session_id, request),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control"
+        }
     )

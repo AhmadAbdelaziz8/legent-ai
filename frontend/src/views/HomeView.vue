@@ -1,11 +1,9 @@
 <template>
-  <div
-    class="h-screen w-full bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center"
-  >
+  <div class="h-screen w-full bg-white flex items-center justify-center">
     <div class="text-center">
       <div class="mb-8">
         <div
-          class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl"
+          class="w-20 h-20 bg-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl"
         >
           <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -16,14 +14,14 @@
             ></path>
           </svg>
         </div>
-        <h1 class="text-4xl font-bold text-white mb-2">Legent AI</h1>
-        <p class="text-lg text-slate-300">AI Assistant Platform</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">Legent AI</h1>
+        <p class="text-lg text-slate-600">AI Assistant Platform</p>
       </div>
 
-      <div class="space-y-4">
+      <div class="flex flex-col gap-4">
         <router-link
           to="/dashboard"
-          class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          class="inline-flex items-center px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -36,7 +34,7 @@
           Go to Dashboard
         </router-link>
 
-        <div class="text-sm text-slate-400">
+        <div class="text-sm text-slate-500">
           <p>Welcome to Legent AI - Your intelligent workspace assistant</p>
         </div>
       </div>

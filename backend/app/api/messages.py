@@ -27,7 +27,5 @@ async def get_messages_by_session_id(
     conn: AsyncConnection = Depends(get_db_connection)
 ):
     messages = await crud.get_messages_by_session_id(conn=conn, session_id=session_id)
-    if not messages:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="No messages found for this session")
-    return messages
+    # Return empty array instead of 404 for sessions with no messages yet
+    return messages or []

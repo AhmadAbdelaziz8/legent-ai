@@ -1,20 +1,13 @@
 <template>
   <div class="session-manager p-6 max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Legent AI Session Manager</h1>
-    
+
     <!-- Health Status -->
     <div class="mb-6">
       <div class="flex items-center gap-2">
-        <div 
-          :class="[
-            'w-3 h-3 rounded-full',
-            isHealthy ? 'bg-green-500' : 'bg-red-500'
-          ]"
-        ></div>
-        <span class="text-sm">
-          API Status: {{ isHealthy ? 'Connected' : 'Disconnected' }}
-        </span>
-        <button 
+        <div :class="['w-3 h-3 rounded-full', isHealthy ? 'bg-green-500' : 'bg-red-500']"></div>
+        <span class="text-sm"> API Status: {{ isHealthy ? 'Connected' : 'Disconnected' }} </span>
+        <button
           @click="checkHealth"
           :disabled="healthLoading"
           class="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
@@ -27,11 +20,9 @@
     <!-- Create New Session -->
     <div class="mb-8 p-4 border rounded-lg">
       <h2 class="text-xl font-semibold mb-4">Create New Session</h2>
-      <form @submit.prevent="createNewSession" class="space-y-4">
+      <form @submit.prevent="createNewSession" class="flex flex-col gap-4">
         <div>
-          <label for="prompt" class="block text-sm font-medium mb-2">
-            Initial Prompt
-          </label>
+          <label for="prompt" class="block text-sm font-medium mb-2"> Initial Prompt </label>
           <textarea
             id="prompt"
             v-model="newSessionPrompt"
@@ -41,11 +32,9 @@
             required
           ></textarea>
         </div>
-        
+
         <div>
-          <label for="provider" class="block text-sm font-medium mb-2">
-            Provider
-          </label>
+          <label for="provider" class="block text-sm font-medium mb-2"> Provider </label>
           <select
             id="provider"
             v-model="selectedProvider"
@@ -56,7 +45,7 @@
             <option value="vertex">Vertex AI</option>
           </select>
         </div>
-        
+
         <button
           type="submit"
           :disabled="sessionLoading"
@@ -70,9 +59,10 @@
     <!-- Current Session -->
     <div v-if="currentSession" class="mb-8 p-4 border rounded-lg">
       <h2 class="text-xl font-semibold mb-4">Current Session</h2>
-      <div class="space-y-2">
+      <div class="flex flex-col gap-2">
         <p><strong>ID:</strong> {{ currentSession.id }}</p>
-        <p><strong>Status:</strong> 
+        <p>
+          <strong>Status:</strong>
           <span :class="getStatusClass(currentSession.status)">
             {{ currentSession.status }}
           </span>
@@ -81,7 +71,7 @@
         <p><strong>Created:</strong> {{ formatDate(currentSession.created_at) }}</p>
         <p><strong>Initial Prompt:</strong> {{ currentSession.initial_prompt }}</p>
       </div>
-      
+
       <!-- Session Actions -->
       <div class="mt-4 flex gap-2">
         <button
@@ -91,7 +81,7 @@
         >
           {{ messageLoading ? 'Loading...' : 'Load Messages' }}
         </button>
-        
+
         <button
           @click="startStreaming"
           :disabled="streamingLoading"
@@ -105,7 +95,7 @@
     <!-- Messages -->
     <div v-if="messages.length > 0" class="mb-8">
       <h2 class="text-xl font-semibold mb-4">Messages</h2>
-      <div class="space-y-4">
+      <div class="flex flex-col gap-4">
         <div
           v-for="message in messages"
           :key="message.id"
@@ -126,7 +116,7 @@
     <!-- Sessions List -->
     <div v-if="sessions.length > 0" class="mb-8">
       <h2 class="text-xl font-semibold mb-4">All Sessions</h2>
-      <div class="space-y-2">
+      <div class="flex flex-col gap-2">
         <div
           v-for="session in sessions"
           :key="session.id"
@@ -162,34 +152,24 @@ import { ref, onMounted } from 'vue'
 import { useSessions, useMessages, useStreamingSession, useHealth } from '@/composables/useApi.js'
 
 // Composables
-const { 
-  sessions, 
-  currentSession, 
-  loading: sessionLoading, 
+const {
+  sessions,
+  currentSession,
+  loading: sessionLoading,
   error: sessionError,
   createSession,
-  fetchSessions 
+  fetchSessions,
 } = useSessions()
 
-const { 
-  messages, 
-  loading: messageLoading, 
-  error: messageError,
-  fetchMessages 
-} = useMessages()
+const { messages, loading: messageLoading, error: messageError, fetchMessages } = useMessages()
 
-const { 
+const {
   loading: streamingLoading,
   error: streamingError,
-  startStreaming: startStreamingSession
+  startStreaming: startStreamingSession,
 } = useStreamingSession()
 
-const { 
-  isHealthy, 
-  loading: healthLoading, 
-  error: healthError,
-  checkHealth 
-} = useHealth()
+const { isHealthy, loading: healthLoading, error: healthError, checkHealth } = useHealth()
 
 // Local state
 const newSessionPrompt = ref('')
@@ -216,7 +196,7 @@ const createNewSession = async () => {
 
 const fetchSessionMessages = async () => {
   if (!currentSession.value) return
-  
+
   try {
     error.value = ''
     await fetchMessages(currentSession.value.id)
@@ -227,7 +207,7 @@ const fetchSessionMessages = async () => {
 
 const startStreaming = async () => {
   if (!currentSession.value) return
-  
+
   try {
     error.value = ''
     await startStreamingSession(currentSession.value.initial_prompt, currentSession.value.provider)
@@ -247,19 +227,19 @@ const selectSession = async (sessionId) => {
 
 const getStatusClass = (status) => {
   const classes = {
-    'queued': 'text-yellow-600 bg-yellow-100',
-    'running': 'text-blue-600 bg-blue-100',
-    'completed': 'text-green-600 bg-green-100',
-    'error': 'text-red-600 bg-red-100'
+    queued: 'text-yellow-600 bg-yellow-100',
+    running: 'text-blue-600 bg-blue-100',
+    completed: 'text-green-600 bg-green-100',
+    error: 'text-red-600 bg-red-100',
   }
   return classes[status] || 'text-gray-600 bg-gray-100'
 }
 
 const getMessageClass = (role) => {
   const classes = {
-    'user': 'bg-blue-50 border-blue-200',
-    'assistant': 'bg-green-50 border-green-200',
-    'tool': 'bg-purple-50 border-purple-200'
+    user: 'bg-blue-50 border-blue-200',
+    assistant: 'bg-green-50 border-green-200',
+    tool: 'bg-purple-50 border-purple-200',
   }
   return classes[role] || 'bg-gray-50 border-gray-200'
 }
@@ -267,7 +247,7 @@ const getMessageClass = (role) => {
 const formatMessageContent = (content) => {
   if (typeof content === 'string') return content
   if (content && content.content) {
-    return content.content.map(block => block.text || JSON.stringify(block)).join('\n')
+    return content.content.map((block) => block.text || JSON.stringify(block)).join('\n')
   }
   return JSON.stringify(content, null, 2)
 }
@@ -289,6 +269,9 @@ onMounted(async () => {
 
 <style scoped>
 .session-manager {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 </style>

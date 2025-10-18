@@ -14,27 +14,103 @@ from app.db.database import get_db_connection
 
 from app.service.computer_use.loop import sampling_loop, APIProvider
 from app.service.computer_use.tools import ToolVersion
+from app.service.computer_use.tools.base import ToolResult
+from app.routes.vnc import start_vnc_services
 
 
 async def _save_and_stream_message(conn: AsyncConnection, session_id: int, role: str, content: dict) -> None:
-    #    save to database
-    message_data = MessageCreate(
-        session_id=session_id, role=role, content=content)
-    new_message = await create_message(conn=conn, message_data=message_data)
-    if not new_message:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Failed to create the message")
-    # stream to client
-    stream_content = {'type': role, 'content': content}
-    await stream_manager.send_message(session_id=session_id, message=json.dumps(stream_content))
+    try:
+        print(
+            f"🔧 [STREAM] _save_and_stream_message called for session {session_id}, role: {role}")
+        #    save to database
+        message_data = MessageCreate(
+            session_id=session_id, role=role, content=content)
+        print(f"🔧 [STREAM] Creating message in database...")
+        try:
+            new_message = await create_message(conn=conn, message_data=message_data)
+            print(f"✅ [STREAM] Message saved to database: {new_message}")
+        except Exception as db_error:
+            print(f"❌ [STREAM] Database error: {db_error}")
+            raise db_error
+        if not new_message:
+            print(f"❌ [STREAM] Failed to create message in database")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Failed to create the message")
+        # stream to client
+        stream_content = {'type': role, 'content': content}
+        print(
+            f"🔧 [STREAM] Sending message to stream: {json.dumps(stream_content)}")
+        await stream_manager.send_message(session_id=session_id, message=json.dumps(stream_content))
+        print(f"✅ [STREAM] Message sent to stream for session {session_id}")
+    except Exception as e:
+        print(f"❌ [STREAM] Error in _save_and_stream_message: {e}")
+        raise e
+
+
+async def _save_and_stream_message_with_image(conn: AsyncConnection, session_id: int, role: str, content: dict, base64_image: str = None) -> None:
+    try:
+        print(
+            f"🔧 [STREAM] _save_and_stream_message_with_image called for session {session_id}, role: {role}")
+        #    save to database with optional base64_image
+        message_data = MessageCreate(
+            session_id=session_id, role=role, content=content, base64_image=base64_image)
+        print(f"🔧 [STREAM] Creating message in database with image...")
+        try:
+            new_message = await create_message(conn=conn, message_data=message_data)
+            print(
+                f"✅ [STREAM] Message with image saved to database: {new_message}")
+        except Exception as db_error:
+            print(f"❌ [STREAM] Database error: {db_error}")
+            raise db_error
+        if not new_message:
+            print(f"❌ [STREAM] Failed to create message in database")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Failed to create the message")
+        # stream to client
+        stream_content = {'type': role, 'content': content}
+        if base64_image:
+            stream_content['base64_image'] = base64_image
+        print(
+            f"🔧 [STREAM] Sending message to stream: {json.dumps(stream_content)}")
+        await stream_manager.send_message(session_id=session_id, message=json.dumps(stream_content))
+        print(f"✅ [STREAM] Message sent to stream for session {session_id}")
+    except Exception as e:
+        print(f"❌ [STREAM] Error in _save_and_stream_message_with_image: {e}")
+        raise e
 
 
 async def agent_output_callback(conn: AsyncConnection, session_id: int, output: dict) -> None:
-    await _save_and_stream_message(conn=conn, session_id=session_id, role='assistant', content=output)
+    print(
+        f"🔧 [CALLBACK] agent_output_callback called for session {session_id} with output: {output}")
+    try:
+        print(
+            f"🔧 [CALLBACK] agent_output_callback called for session {session_id}")
+        await _save_and_stream_message(conn=conn, session_id=session_id, role='assistant', content=output)
+        print(
+            f"✅ [CALLBACK] agent_output_callback completed for session {session_id}")
+    except Exception as e:
+        print(f"❌ [CALLBACK] Error in agent_output_callback: {e}")
+        raise e
 
 
-async def tool_output_callback(conn: AsyncConnection, session_id: int, output: dict) -> None:
-    await _save_and_stream_message(conn=conn, session_id=session_id, role='tool', content=output)
+async def tool_output_callback(conn: AsyncConnection, session_id: int, output: ToolResult) -> None:
+    # Extract base64_image if present in the tool result
+    base64_image = None
+    if hasattr(output, 'base64_image') and output.base64_image:
+        base64_image = output.base64_image
+        print(
+            f"🖼️ [TOOL] Screenshot captured, length: {len(base64_image)} characters")
+
+    # Create content dict for database storage
+    content_dict = {
+        'type': 'tool_result',
+        'output': output.output if hasattr(output, 'output') else None,
+        'error': output.error if hasattr(output, 'error') else None,
+        'system': output.system if hasattr(output, 'system') else None
+    }
+
+    # Save message with screenshot if available
+    await _save_and_stream_message_with_image(conn=conn, session_id=session_id, role='tool', content=content_dict, base64_image=base64_image)
 
 
 def validate_aws_credentials():
@@ -103,6 +179,16 @@ async def run_agent_session(
             await crud.update_session_status(conn=conn, session_id=session_id, status='running')
             await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'status', 'content': 'running'}))
 
+            # Save initial prompt as first user message
+            print(f"💬 [AGENT] Saving initial prompt as first user message...")
+            await _save_and_stream_message(conn=conn, session_id=session_id, role='user', content={'type': 'text', 'text': initial_prompt})
+            print(f"✅ [AGENT] Initial prompt saved as user message")
+
+            # Start VNC services for computer use
+            print(f"🖥️ [AGENT] Starting VNC services for computer use...")
+            await start_vnc_services()
+            print(f"✅ [AGENT] VNC services started")
+
             provider_enum = APIProvider(provider)
 
             if not model:
@@ -120,10 +206,17 @@ async def run_agent_session(
                 print(
                     f"🔧 [AGENT] Set thinking_budget to {thinking_budget} (max_tokens: {max_tokens})")
 
-            output_cb = partial(agent_output_callback,
-                                conn=conn, session_id=session_id)
-            tool_cb = partial(tool_output_callback,
-                              conn=conn, session_id=session_id)
+            # Create wrapper functions instead of using partial
+            async def output_cb(content_dict):
+                print(f"🔧 [WRAPPER] output_cb called with: {content_dict}")
+                await agent_output_callback(conn=conn, session_id=session_id, output=content_dict)
+
+            async def tool_cb(result, tool_id):
+                print(f"🔧 [WRAPPER] tool_cb called with: {result}, {tool_id}")
+                await tool_output_callback(conn=conn, session_id=session_id, output=result)
+
+            print(f"🔧 [AGENT] Created output_cb wrapper")
+            print(f"🔧 [AGENT] Created tool_cb wrapper")
 
             # Set API key based on provider
             api_key = ""

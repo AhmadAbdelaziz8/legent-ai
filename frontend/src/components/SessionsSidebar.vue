@@ -1,15 +1,11 @@
 <template>
   <div
-    class="w-56 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-lg"
+    class="w-56 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-lg"
   >
     <!-- Header with Logo -->
-    <div
-      class="p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900"
-    >
-      <div class="flex items-center space-x-3 mb-4">
-        <div
-          class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center"
-        >
+    <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -48,36 +44,13 @@
     <!-- Task History Section -->
     <div class="flex-1 overflow-y-auto">
       <div class="p-3">
-        <div class="flex items-center space-x-2 mb-3">
-          <svg
-            class="w-5 h-5 text-slate-500 dark:text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-            ></path>
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"
-            ></path>
-          </svg>
-          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Task History</h2>
-        </div>
-
         <!-- Library Section -->
         <div class="mb-4">
           <button
             @click="toggleLibrary"
             class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
           >
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -86,7 +59,7 @@
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 ></path>
               </svg>
-              <span>Library</span>
+              <span>Sessions</span>
             </div>
             <svg
               :class="[
@@ -107,7 +80,7 @@
           </button>
 
           <!-- Library Items -->
-          <div v-if="libraryExpanded" class="mt-2 space-y-1">
+          <div v-if="libraryExpanded" class="mt-2 flex flex-col gap-2">
             <div
               v-for="session in sortedSessions"
               :key="session.id"
@@ -115,8 +88,8 @@
               :class="[
                 'group p-2 rounded-lg cursor-pointer transition-all duration-300 border',
                 currentSession?.id === session.id
-                  ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-300 dark:border-green-600'
-                  : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-600 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
               ]"
             >
               <p class="text-xs font-medium text-slate-900 dark:text-slate-100 truncate">
@@ -131,7 +104,7 @@
 
         <!-- Prompt Gallery Section -->
         <div
-          class="flex items-center space-x-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+          class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

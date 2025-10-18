@@ -75,6 +75,10 @@ export const useSessionsStore = defineStore('sessions', () => {
     currentSession.value = session
   }
 
+  const clearCurrentSession = () => {
+    currentSession.value = null
+  }
+
   const refreshSessions = async () => {
     return await fetchSessions()
   }
@@ -99,6 +103,7 @@ export const useSessionsStore = defineStore('sessions', () => {
     fetchSession,
     createSession,
     setCurrentSession,
+    clearCurrentSession,
     refreshSessions,
     clearError,
   }

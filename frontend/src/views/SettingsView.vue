@@ -1,17 +1,13 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
-  >
+  <div class="min-h-screen bg-white dark:bg-slate-900">
     <!-- Header -->
-    <header
-      class="bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xl border-b border-slate-700"
-    >
+    <header class="bg-white text-slate-900 shadow-xl border-b border-slate-200">
       <div class="px-6 py-4">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <router-link to="/" class="flex items-center space-x-3">
+          <div class="flex items-center gap-4">
+            <router-link to="/" class="flex items-center gap-3">
               <div
-                class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg"
+                class="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center shadow-lg"
               >
                 <svg
                   class="w-6 h-6 text-white"
@@ -28,13 +24,16 @@
                 </svg>
               </div>
               <div>
-                <h1 class="text-xl font-bold">Legent AI</h1>
-                <span class="text-sm text-slate-300">Settings</span>
+                <h1 class="text-xl font-bold text-slate-900">Legent AI</h1>
+                <span class="text-sm text-slate-600">Settings</span>
               </div>
             </router-link>
           </div>
-          <div class="flex items-center space-x-4">
-            <router-link to="/dashboard" class="text-slate-300 hover:text-white transition-colors">
+          <div class="flex items-center gap-4">
+            <router-link
+              to="/dashboard"
+              class="text-slate-600 hover:text-slate-900 transition-colors"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -58,7 +57,7 @@
           <!-- General Settings -->
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">General</h3>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                   >Theme</label
@@ -91,7 +90,7 @@
             <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
               AI Assistant
             </h3>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                   >Default Model</label
@@ -121,7 +120,7 @@
           <!-- Workspace Settings -->
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Workspace</h3>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                   >VNC Server</label

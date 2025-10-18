@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="h-screen w-[100vw] flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
-  >
+  <div class="h-screen w-[100vw] flex flex-col bg-white dark:bg-slate-900">
     <!-- Header -->
     <AppHeader />
 

@@ -9,7 +9,7 @@ from app.db import crud
 # Use our safe dependency function
 from app.db.database import get_db_connection
 import logging
-from app.service.stream_manager import stream_manager, stream_generator
+# Removed stream_manager import - using polling instead
 from app.service.agent_service import run_agent_session
 
 router = APIRouter()
@@ -38,7 +38,12 @@ async def create_new_session(
         run_agent_session,
         session_id=new_session["id"],
         initial_prompt=session_in.initial_prompt,
-        provider=session_in.provider
+        provider=session_in.provider,
+        model=session_in.model,
+        system_prompt_suffix=session_in.system_prompt_suffix or "",
+        max_tokens=session_in.max_tokens,
+        thinking_budget=session_in.thinking_budget,
+        only_n_most_recent_images=session_in.only_n_most_recent_images or 3
     )
 
     # Return the data directly. FastAPI will serialize it.
@@ -68,18 +73,27 @@ async def read_session(
     return db_session
 
 
-@router.get("/{session_id}/stream")
-async def stream_session_updates(session_id: int, request: Request) -> StreamingResponse:
-    # Create a stream for the session if it doesn't exist (e.g., if client connects fast)
-    stream_manager.create_stream(session_id)
+@router.get("/{session_id}/messages")
+async def get_session_messages(
+    session_id: int,
+    conn: AsyncConnection = Depends(get_db_connection)
+):
+    """Get all messages for a session - used for polling-based updates"""
+    messages = await crud.get_messages_by_session_id(conn=conn, session_id=session_id)
+    return messages
 
-    return StreamingResponse(
-        stream_generator(session_id, request),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Cache-Control"
-        }
-    )
+
+@router.get("/{session_id}/status")
+async def get_session_status(
+    session_id: int,
+    conn: AsyncConnection = Depends(get_db_connection)
+):
+    """Get session status - used for polling-based updates"""
+    session = await crud.get_session_by_id(conn=conn, session_id=session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {
+        "id": session["id"],
+        "status": session["status"],
+        "created_at": session["created_at"]
+    }

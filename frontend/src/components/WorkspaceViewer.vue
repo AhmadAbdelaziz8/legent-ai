@@ -1,7 +1,7 @@
 <template>
-  <div class="flex-1 flex flex-col bg-white dark:bg-slate-900">
+  <div class="flex-1 flex flex-col bg-white">
     <!-- Main Workspace Area -->
-    <div class="flex-1 relative bg-slate-900 dark:bg-slate-950">
+    <div class="flex-1 relative bg-slate-900">
       <!-- VNC Viewer Component -->
       <VNCViewer
         :vnc-host="vncHost"

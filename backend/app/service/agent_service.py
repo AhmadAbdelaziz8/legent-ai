@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncConnection
 from app.db.models import messages
 from app.db.crud import create_message
-from app.service.stream_manager import stream_manager
+# Removed stream_manager import - using polling instead
 from app.api.schemas import MessageCreate
 from fastapi import HTTPException, status
 import json
@@ -18,64 +18,87 @@ from app.service.computer_use.tools.base import ToolResult
 from app.routes.vnc import start_vnc_services
 
 
-async def _save_and_stream_message(conn: AsyncConnection, session_id: int, role: str, content: dict) -> None:
+def _serialize_content(content: dict) -> dict:
+    """Convert complex objects in content to JSON-serializable format"""
+    try:
+        import json
+
+        def convert_obj(obj):
+            if hasattr(obj, '__dict__'):
+                return {k: v for k, v in obj.__dict__.items() if not k.startswith('_')}
+            elif hasattr(obj, '_asdict'):
+                return obj._asdict()
+            elif isinstance(obj, dict):
+                return {k: convert_obj(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_obj(item) for item in obj]
+            else:
+                return obj
+
+        serialized = convert_obj(content)
+        # Test if it's JSON serializable
+        json.dumps(serialized)
+        return serialized
+    except Exception as e:
+        print(
+            f"⚠️ [SERIALIZE] Could not serialize content, using string representation: {e}")
+        return {"type": "text", "text": str(content)}
+
+
+async def _save_message(conn: AsyncConnection, session_id: int, role: str, content: dict) -> None:
     try:
         print(
-            f"🔧 [STREAM] _save_and_stream_message called for session {session_id}, role: {role}")
-        #    save to database
+            f"💾 [POLLING] Saving message for session {session_id}, role: {role}")
+        # Serialize content to make it JSON-compatible
+        serialized_content = _serialize_content(content)
+        print(f"💾 [POLLING] Serialized content: {serialized_content}")
+
+        # Save to database
         message_data = MessageCreate(
-            session_id=session_id, role=role, content=content)
-        print(f"🔧 [STREAM] Creating message in database...")
+            session_id=session_id, role=role, content=serialized_content)
+        print(f"💾 [POLLING] Creating message in database...")
         try:
             new_message = await create_message(conn=conn, message_data=message_data)
-            print(f"✅ [STREAM] Message saved to database: {new_message}")
+            print(f"✅ [POLLING] Message saved to database: {new_message}")
         except Exception as db_error:
-            print(f"❌ [STREAM] Database error: {db_error}")
+            print(f"❌ [POLLING] Database error: {db_error}")
             raise db_error
         if not new_message:
-            print(f"❌ [STREAM] Failed to create message in database")
+            print(f"❌ [POLLING] Failed to create message in database")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="Failed to create the message")
-        # stream to client
-        stream_content = {'type': role, 'content': content}
-        print(
-            f"🔧 [STREAM] Sending message to stream: {json.dumps(stream_content)}")
-        await stream_manager.send_message(session_id=session_id, message=json.dumps(stream_content))
-        print(f"✅ [STREAM] Message sent to stream for session {session_id}")
+        print(f"✅ [POLLING] Message saved for session {session_id}")
     except Exception as e:
-        print(f"❌ [STREAM] Error in _save_and_stream_message: {e}")
+        print(f"❌ [POLLING] Error in _save_message: {e}")
         raise e
 
 
-async def _save_and_stream_message_with_image(conn: AsyncConnection, session_id: int, role: str, content: dict, base64_image: str = None) -> None:
+async def _save_message_with_image(conn: AsyncConnection, session_id: int, role: str, content: dict, base64_image: str = None) -> None:
     try:
         print(
-            f"🔧 [STREAM] _save_and_stream_message_with_image called for session {session_id}, role: {role}")
-        #    save to database with optional base64_image
+            f"💾 [POLLING] Saving message with image for session {session_id}, role: {role}")
+        # Serialize content to make it JSON-compatible
+        serialized_content = _serialize_content(content)
+        print(f"💾 [POLLING] Serialized content: {serialized_content}")
+
+        # Save to database with optional base64_image
         message_data = MessageCreate(
-            session_id=session_id, role=role, content=content, base64_image=base64_image)
-        print(f"🔧 [STREAM] Creating message in database with image...")
+            session_id=session_id, role=role, content=serialized_content, base64_image=base64_image)
+        print(f"💾 [POLLING] Creating message in database with image...")
         try:
             new_message = await create_message(conn=conn, message_data=message_data)
             print(
-                f"✅ [STREAM] Message with image saved to database: {new_message}")
+                f"✅ [POLLING] Message with image saved to database: {new_message}")
         except Exception as db_error:
-            print(f"❌ [STREAM] Database error: {db_error}")
+            print(f"❌ [POLLING] Database error: {db_error}")
             raise db_error
         if not new_message:
-            print(f"❌ [STREAM] Failed to create message in database")
+            print(f"❌ [POLLING] Failed to create message in database")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="Failed to create the message")
-        # stream to client
-        stream_content = {'type': role, 'content': content}
-        if base64_image:
-            stream_content['base64_image'] = base64_image
-        print(
-            f"🔧 [STREAM] Sending message to stream: {json.dumps(stream_content)}")
-        await stream_manager.send_message(session_id=session_id, message=json.dumps(stream_content))
-        print(f"✅ [STREAM] Message sent to stream for session {session_id}")
+        print(f"✅ [POLLING] Message with image saved for session {session_id}")
     except Exception as e:
-        print(f"❌ [STREAM] Error in _save_and_stream_message_with_image: {e}")
+        print(f"❌ [POLLING] Error in _save_message_with_image: {e}")
         raise e
 
 
@@ -85,7 +108,7 @@ async def agent_output_callback(conn: AsyncConnection, session_id: int, output: 
     try:
         print(
             f"🔧 [CALLBACK] agent_output_callback called for session {session_id}")
-        await _save_and_stream_message(conn=conn, session_id=session_id, role='assistant', content=output)
+        await _save_message(conn=conn, session_id=session_id, role='assistant', content=output)
         print(
             f"✅ [CALLBACK] agent_output_callback completed for session {session_id}")
     except Exception as e:
@@ -110,7 +133,7 @@ async def tool_output_callback(conn: AsyncConnection, session_id: int, output: T
     }
 
     # Save message with screenshot if available
-    await _save_and_stream_message_with_image(conn=conn, session_id=session_id, role='tool', content=content_dict, base64_image=base64_image)
+    await _save_message_with_image(conn=conn, session_id=session_id, role='tool', content=content_dict, base64_image=base64_image)
 
 
 def validate_aws_credentials():
@@ -159,7 +182,7 @@ async def run_agent_session(
     print(
         f"🚀 [AGENT] Starting agent session {session_id} with provider: {provider}")
     async for conn in get_db_connection():
-        stream_manager.create_stream(session_id=session_id)
+        # Stream creation removed - using polling instead
         print(f"📡 [AGENT] Stream created for session {session_id}")
 
         try:
@@ -170,18 +193,21 @@ async def run_agent_session(
                 if aws_error:
                     print(
                         f"❌ [AGENT] AWS credentials validation failed: {aws_error}")
-                    await crud.update_session_status(conn=conn, session_id=session_id, status='error')
-                    await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'error', 'content': aws_error}))
-                    return
-                print(f"✅ [AGENT] AWS credentials validation passed")
+                    print(f"🔄 [AGENT] Falling back to Anthropic provider...")
+                    # Fallback to Anthropic if AWS credentials are not available
+                    provider = "anthropic"
+                    print(f"✅ [AGENT] Using Anthropic provider as fallback")
+                else:
+                    print(f"✅ [AGENT] AWS credentials validation passed")
 
             print(f"🔄 [AGENT] Updating session status to 'running'")
             await crud.update_session_status(conn=conn, session_id=session_id, status='running')
-            await stream_manager.send_message(session_id=session_id, message=json.dumps({'type': 'status', 'content': 'running'}))
+            # Status update - polling will pick this up
+            print(f"🔄 [AGENT] Session status updated to running")
 
             # Save initial prompt as first user message
             print(f"💬 [AGENT] Saving initial prompt as first user message...")
-            await _save_and_stream_message(conn=conn, session_id=session_id, role='user', content={'type': 'text', 'text': initial_prompt})
+            await _save_message(conn=conn, session_id=session_id, role='user', content={'type': 'text', 'text': initial_prompt})
             print(f"✅ [AGENT] Initial prompt saved as user message")
 
             # Start VNC services for computer use
@@ -222,6 +248,9 @@ async def run_agent_session(
             api_key = ""
             if provider_enum == APIProvider.ANTHROPIC:
                 api_key = settings.ANTHROPIC_API_KEY
+                if not api_key:
+                    raise ValueError(
+                        "ANTHROPIC_API_KEY is required but not set. Please create a .env file in the backend directory with your Anthropic API key.")
             elif provider_enum == APIProvider.BEDROCK:
                 # Bedrock uses AWS credentials, no API key needed
                 api_key = ""
@@ -244,6 +273,17 @@ async def run_agent_session(
                 only_n_most_recent_images=only_n_most_recent_images,
             )
 
+            # Mark session as completed
+            print(f"✅ [AGENT] Session {session_id} completed successfully")
+            await crud.update_session_status(conn=conn, session_id=session_id, status='completed')
+
         except Exception as e:
+            print(f"❌ [AGENT] Error in agent session: {e}")
             await crud.update_session_status(conn=conn, session_id=session_id, status='error')
-            raise e
+            # Save error message for user feedback
+            await _save_message(conn=conn, session_id=session_id, role='assistant', content={
+                'type': 'text',
+                'text': f"Sorry, there was an error processing your request: {str(e)}"
+            })
+            print(f"❌ [AGENT] Session {session_id} marked as error")
+            return

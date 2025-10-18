@@ -7,6 +7,12 @@ class SessionCreate(BaseModel):
     initial_prompt: str
     status: str = "queued"
     provider: str
+    model: Optional[str] = None
+    system_prompt_suffix: Optional[str] = None
+    max_tokens: Optional[int] = None
+    thinking_budget: Optional[int] = None
+    only_n_most_recent_images: Optional[int] = None
+    tool_version: Optional[str] = None
 
 
 class Session(BaseModel):

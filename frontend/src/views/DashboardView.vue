@@ -1,10 +1,10 @@
 <template>
-  <div class="h-screen w-[100vw] flex flex-col bg-white dark:bg-slate-900">
+  <div class="h-screen w-[100vw] flex flex-col bg-white">
     <!-- Header -->
     <AppHeader />
 
     <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden bg-white dark:bg-slate-900 shadow-inner">
+    <main class="flex-1 flex overflow-hidden bg-white shadow-inner">
       <!-- Left Sidebar: Task History -->
       <SessionsSidebar />
 
@@ -12,7 +12,7 @@
       <WorkspaceViewer />
 
       <!-- Right Sidebar: AI Assistant -->
-      <ChatPanel />
+      <ChatPanelPolling />
     </main>
   </div>
 </template>
@@ -22,7 +22,7 @@ import { onMounted } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
 import SessionsSidebar from '../components/SessionsSidebar.vue'
 import WorkspaceViewer from '../components/WorkspaceViewer.vue'
-import ChatPanel from '../components/ChatPanel.vue'
+import ChatPanelPolling from '../components/ChatPanelPolling.vue'
 
 // Initialize stores on app mount
 onMounted(() => {

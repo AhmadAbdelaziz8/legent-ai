@@ -64,8 +64,12 @@ export const sessionsApi = {
     return apiRequest(`/sessions/${sessionId}`)
   },
 
-  streamUpdates(sessionId) {
-    return new EventSource(`${API_BASE_URL}/sessions/${sessionId}/stream`)
+  async getMessages(sessionId) {
+    return apiRequest(`/sessions/${sessionId}/messages`)
+  },
+
+  async getStatus(sessionId) {
+    return apiRequest(`/sessions/${sessionId}/status`)
   },
 }
 
@@ -142,21 +146,18 @@ export const api = {
 }
 
 export const apiUtils = {
-  async createSessionWithStream(initialPrompt, provider = 'bedrock') {
+  async createSession(initialPrompt, provider = 'bedrock') {
     try {
       const session = await sessionsApi.create({
         initial_prompt: initialPrompt,
         provider: provider,
       })
 
-      const eventSource = sessionsApi.streamUpdates(session.id)
-
       return {
         session,
-        eventSource,
       }
     } catch (error) {
-      console.error('Failed to create session with stream:', error)
+      console.error('Failed to create session:', error)
       throw error
     }
   },

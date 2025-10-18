@@ -1,26 +1,7 @@
 <template>
-  <div
-    class="w-56 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-lg"
-  >
+  <div class="w-56 bg-white border-r border-slate-200 flex flex-col h-full shadow-lg">
     <!-- Header with Logo -->
-    <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            ></path>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-lg font-bold text-slate-900 dark:text-slate-100">Legent AI</h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400">AI Assistant Platform</p>
-        </div>
-      </div>
-
+    <div class="p-4 border-b border-slate-200 bg-white">
       <!-- Search Bar -->
       <div class="relative">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,7 +17,7 @@
         <input
           type="text"
           placeholder="Q Search"
-          class="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
     </div>
@@ -48,7 +29,7 @@
         <div class="mb-4">
           <button
             @click="toggleLibrary"
-            class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+            class="flex items-center justify-between w-full text-left text-sm font-medium text-slate-700 hover:text-slate-900"
           >
             <div class="flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,14 +69,14 @@
               :class="[
                 'group p-2 rounded-lg cursor-pointer transition-all duration-300 border',
                 currentSession?.id === session.id
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
-                  : 'hover:bg-slate-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
+                  ? 'bg-green-50 border-green-300'
+                  : 'hover:bg-slate-50 border-slate-200 hover:border-slate-300',
               ]"
             >
-              <p class="text-xs font-medium text-slate-900 dark:text-slate-100 truncate">
+              <p class="text-xs font-medium text-slate-900 truncate">
                 {{ truncateText(session.initial_prompt, 30) }}
               </p>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p class="text-xs text-slate-500 mt-1">
                 {{ formatRelativeTime(session.created_at) }}
               </p>
             </div>
@@ -104,7 +85,7 @@
 
         <!-- Prompt Gallery Section -->
         <div
-          class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+          class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

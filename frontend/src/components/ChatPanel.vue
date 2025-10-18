@@ -1,44 +1,22 @@
 <template>
-  <div
-    class="w-56 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-lg"
-  >
+  <div class="w-56 bg-white border-l border-slate-200 flex flex-col h-full shadow-lg">
     <!-- Header -->
-    <div class="p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center">
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z"
-                ></path>
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">AI Assistant</h2>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Always here to help</p>
-            </div>
-          </div>
-        </div>
-        <button
-          @click="startNewSession"
-          :disabled="isStreaming"
-          class="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-400 text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center gap-1"
-        >
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
-          <span>New Session</span>
-        </button>
-      </div>
+    <div class="flex items-center justify-between mx-auto">
+      <button
+        @click="startNewSession"
+        :disabled="isStreaming"
+        class="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-400 text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed flex items-center gap-1"
+      >
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        <span>New Session</span>
+      </button>
     </div>
 
     <!-- Content -->
@@ -56,19 +34,19 @@
           <!-- AI Assistant Welcome Message -->
           <div class="mb-4">
             <div
-              class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-3 border border-green-200 dark:border-green-700"
+              class="bg-gradient-to-r from-green-50 to-green-100 from-green-50 to-green-100 rounded-lg p-3 border border-green-200 border-green-200"
             >
-              <p class="text-sm text-slate-900 dark:text-slate-100">
+              <p class="text-sm text-slate-900 text-slate-900">
                 Hi! Click "New Session" to start a conversation
               </p>
             </div>
           </div>
           <div class="relative">
             <div
-              class="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center"
+              class="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 from-slate-200 to-slate-300 rounded-full flex items-center justify-center"
             >
               <svg
-                class="w-10 h-10 text-slate-500 dark:text-slate-400"
+                class="w-10 h-10 text-slate-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -83,8 +61,8 @@
             </div>
           </div>
           <div class="flex flex-col items-center gap-3">
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Ready to Chat</h3>
-            <p class="text-slate-500 dark:text-slate-400 text-sm max-w-xs">
+            <h3 class="text-xl font-semibold text-slate-900 text-slate-900">Ready to Chat</h3>
+            <p class="text-slate-500 text-slate-500 text-sm max-w-xs">
               Start a new session to begin your conversation
             </p>
           </div>
@@ -97,10 +75,10 @@
         >
           <div class="relative">
             <div
-              class="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800 rounded-full flex items-center justify-center"
+              class="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 from-blue-200 to-purple-200 rounded-full flex items-center justify-center"
             >
               <svg
-                class="w-10 h-10 text-blue-500 dark:text-blue-400"
+                class="w-10 h-10 text-blue-500 text-blue-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -115,10 +93,8 @@
             </div>
           </div>
           <div class="flex flex-col items-center gap-3">
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              New Session Ready
-            </h3>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">
+            <h3 class="text-xl font-semibold text-slate-900 text-slate-900">New Session Ready</h3>
+            <p class="text-slate-500 text-slate-500 text-sm">
               Type your message below to start the conversation
             </p>
           </div>
@@ -131,10 +107,10 @@
         >
           <div class="relative">
             <div
-              class="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800 rounded-full flex items-center justify-center"
+              class="w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 from-blue-200 to-purple-200 rounded-full flex items-center justify-center"
             >
               <svg
-                class="w-10 h-10 text-blue-500 dark:text-blue-400"
+                class="w-10 h-10 text-blue-500 text-blue-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -149,10 +125,8 @@
             </div>
           </div>
           <div class="flex flex-col items-center gap-3">
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              No Messages Yet
-            </h3>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">
+            <h3 class="text-xl font-semibold text-slate-900 text-slate-900">No Messages Yet</h3>
+            <p class="text-slate-500 text-slate-500 text-sm">
               This session doesn't have any messages yet
             </p>
           </div>
@@ -166,8 +140,8 @@
             :class="[
               'p-4 rounded-xl shadow-sm border-2 transition-all duration-300',
               message.role === 'user'
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 ml-8'
-                : 'bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 mr-8',
+                ? 'bg-blue-50 bg-blue-50 border-blue-200 border-blue-200 ml-8'
+                : 'bg-slate-50 bg-slate-50 border-slate-200 border-slate-200 mr-8',
             ]"
           >
             <div class="flex items-start gap-3">
@@ -183,7 +157,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-start gap-2">
-                  <div class="text-sm text-slate-900 dark:text-slate-100 leading-relaxed">
+                  <div class="text-sm text-slate-900 text-slate-900 leading-relaxed">
                     <p class="whitespace-pre-wrap break-words">
                       {{ getMessageContent(message) }}
                     </p>
@@ -192,7 +166,7 @@
                       <img
                         :src="getScreenshotUrl(message)"
                         alt="Screenshot"
-                        class="max-w-full h-auto rounded-lg border border-slate-200 dark:border-slate-600 cursor-pointer hover:opacity-90 transition-opacity"
+                        class="max-w-full h-auto rounded-lg border border-slate-200 border-slate-200 cursor-pointer hover:opacity-90 transition-opacity"
                         @click="openScreenshotModal(message)"
                       />
                     </div>
@@ -214,7 +188,7 @@
                 <!-- Screenshot display for computer use messages -->
                 <div v-if="hasScreenshot(message)" class="mt-3">
                   <div
-                    class="bg-slate-100 dark:bg-slate-800 rounded-lg p-2 border border-slate-200 dark:border-slate-600"
+                    class="bg-slate-100 bg-slate-100 rounded-lg p-2 border border-slate-200 border-slate-200"
                   >
                     <div class="flex items-center gap-2 mb-2">
                       <svg
@@ -236,18 +210,18 @@
                           d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                         ></path>
                       </svg>
-                      <span class="text-xs text-slate-500 dark:text-slate-400">Screenshot</span>
+                      <span class="text-xs text-slate-500 text-slate-500">Screenshot</span>
                     </div>
                     <img
                       :src="getScreenshotUrl(message)"
                       :alt="'Screenshot from ' + message.role"
-                      class="w-full max-w-md rounded border border-slate-200 dark:border-slate-600 shadow-sm"
+                      class="w-full max-w-md rounded border border-slate-200 border-slate-200 shadow-sm"
                       @click="openScreenshotModal(message)"
                     />
                   </div>
                 </div>
 
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
+                <p class="text-xs text-slate-500 text-slate-500 mt-2 flex items-center gap-1">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
@@ -267,7 +241,7 @@
       <!-- Chat Input Bar -->
       <div
         v-if="currentSession || isNewSessionPending"
-        class="p-3 border-t border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex-shrink-0"
+        class="p-3 border-t border-slate-200 border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 from-slate-50 to-slate-100 flex-shrink-0"
       >
         <div class="flex items-center gap-2">
           <div class="flex-1 relative">
@@ -277,7 +251,7 @@
               @keydown.enter="sendMessage"
               :disabled="isStreaming"
               placeholder="Type your message..."
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              class="w-full px-3 py-2 border border-slate-300 border-slate-200 rounded-lg bg-white bg-slate-50 text-slate-900 text-slate-900 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             />
           </div>
           <button

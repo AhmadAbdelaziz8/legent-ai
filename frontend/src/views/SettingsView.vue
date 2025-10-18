@@ -51,19 +51,19 @@
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
       <div class="max-w-4xl mx-auto">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-8">Settings</h2>
+        <h2 class="text-2xl font-bold text-slate-900 mb-8">Settings</h2>
 
         <div class="grid gap-6">
           <!-- General Settings -->
-          <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">General</h3>
+          <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-slate-900 mb-4">General</h3>
             <div class="flex flex-col gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                <label class="block text-sm font-medium text-slate-700 text-slate-700 mb-2"
                   >Theme</label
                 >
                 <select
-                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                  class="w-full px-3 py-2 border border-slate-300 border-slate-300 rounded-lg bg-white bg-white text-slate-900 text-slate-900"
                 >
                   <option>Light</option>
                   <option>Dark</option>
@@ -71,11 +71,11 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                <label class="block text-sm font-medium text-slate-700 text-slate-700 mb-2"
                   >Language</label
                 >
                 <select
-                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                  class="w-full px-3 py-2 border border-slate-300 border-slate-300 rounded-lg bg-white bg-white text-slate-900 text-slate-900"
                 >
                   <option>English</option>
                   <option>Spanish</option>
@@ -87,16 +87,14 @@
 
           <!-- AI Settings -->
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
-              AI Assistant
-            </h3>
+            <h3 class="text-lg font-semibold text-slate-900 text-slate-900 mb-4">AI Assistant</h3>
             <div class="flex flex-col gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                <label class="block text-sm font-medium text-slate-700 text-slate-700 mb-2"
                   >Default Model</label
                 >
                 <select
-                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                  class="w-full px-3 py-2 border border-slate-300 border-slate-300 rounded-lg bg-white bg-white text-slate-900 text-slate-900"
                 >
                   <option>GPT-4</option>
                   <option>GPT-3.5</option>
@@ -109,7 +107,7 @@
                     type="checkbox"
                     class="rounded border-slate-300 text-green-600 focus:ring-green-500"
                   />
-                  <span class="ml-2 text-sm text-slate-700 dark:text-slate-300"
+                  <span class="ml-2 text-sm text-slate-700 text-slate-700"
                     >Enable voice commands</span
                   >
                 </label>
@@ -119,16 +117,16 @@
 
           <!-- Workspace Settings -->
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Workspace</h3>
+            <h3 class="text-lg font-semibold text-slate-900 text-slate-900 mb-4">Workspace</h3>
             <div class="flex flex-col gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                <label class="block text-sm font-medium text-slate-700 text-slate-700 mb-2"
                   >VNC Server</label
                 >
                 <input
                   type="text"
                   placeholder="localhost:8080"
-                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                  class="w-full px-3 py-2 border border-slate-300 border-slate-300 rounded-lg bg-white bg-white text-slate-900 text-slate-900"
                 />
               </div>
               <div>
@@ -137,7 +135,7 @@
                     type="checkbox"
                     class="rounded border-slate-300 text-green-600 focus:ring-green-500"
                   />
-                  <span class="ml-2 text-sm text-slate-700 dark:text-slate-300"
+                  <span class="ml-2 text-sm text-slate-700 text-slate-700"
                     >Auto-connect to VNC</span
                   >
                 </label>
